@@ -1,0 +1,71 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: build (0001): changes for TWRP
+
+diff --git a/core/Makefile b/core/Makefile
+index 20e8d49..bee94a4 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -760,15 +760,17 @@ $(TARGET_RECOVERY_ROOT_TIMESTAMP): $(INTERNAL_RECOVERY_FILES) \
+ 	@echo -e ${CL_CYN}"----- Making recovery filesystem ------"${CL_RST}
+ 	$(hide) mkdir -p $(TARGET_RECOVERY_OUT)
+ 	$(hide) mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/etc $(TARGET_RECOVERY_ROOT_OUT)/tmp
+-	@echo -e ${CL_CYN}"Copying baseline ramdisk..."${CL_RST}
+-	$(hide) cp -R $(TARGET_ROOT_OUT) $(TARGET_RECOVERY_OUT)
+ 	@echo -e ${CL_CYN}"Modifying ramdisk contents..."${CL_RST}
+-	$(hide) rm -f $(TARGET_RECOVERY_ROOT_OUT)/init*.rc
+ 	$(hide) cp -f $(recovery_initrc) $(TARGET_RECOVERY_ROOT_OUT)/init.rc
+-
+-	$(hide) -cp $(TARGET_ROOT_OUT)/init.recovery.*.rc $(TARGET_RECOVERY_ROOT_OUT)/
+ 	$(hide) cp -f $(recovery_binary) $(TARGET_RECOVERY_ROOT_OUT)/sbin/
++	$(hide) cp -f $(TARGET_ROOT_OUT)/init $(TARGET_RECOVERY_ROOT_OUT)/
++	$(hide) cp -f $(TARGET_ROOT_OUT)/ueventd.rc $(TARGET_RECOVERY_ROOT_OUT)/
++	$(hide) cp -R $(TARGET_ROOT_OUT)/sbin/ $(TARGET_RECOVERY_ROOT_OUT)/
+ 	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/system/bin
++	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/data
++	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/dev
++	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/proc
++	mkdir -p $(TARGET_RECOVERY_ROOT_OUT)/sys
+ 	$(hide) cp -rf $(recovery_resources_common) $(TARGET_RECOVERY_ROOT_OUT)/
+ 	$(hide) $(foreach item,$(recovery_resources_private), \
+ 	  cp -rf $(item) $(TARGET_RECOVERY_ROOT_OUT)/)
+@@ -779,9 +781,6 @@ $(TARGET_RECOVERY_ROOT_TIMESTAMP): $(INTERNAL_RECOVERY_FILES) \
+ 	$(hide) cp $(RECOVERY_INSTALL_OTA_KEYS) $(TARGET_RECOVERY_ROOT_OUT)/res/keys
+ 	$(hide) cat $(INSTALLED_DEFAULT_PROP_TARGET) $(recovery_build_prop) \
+ 	        > $(TARGET_RECOVERY_ROOT_OUT)/default.prop
+-	@echo -e ${CL_YLW}"Modifying default.prop"${CL_RST}
+-	$(SED_INPLACE) 's/ro.build.date.utc=.*/ro.build.date.utc=0/g' $(TARGET_RECOVERY_ROOT_OUT)/default.prop
+-	$(SED_INPLACE) 's/ro.adb.secure=1//g' $(TARGET_RECOVERY_ROOT_OUT)/default.prop
+ 	@echo -e ${CL_CYN}"----- Made recovery filesystem --------"$(TARGET_RECOVERY_ROOT_OUT)${CL_RST}
+ 	@touch $(TARGET_RECOVERY_ROOT_TIMESTAMP)
+ 
+diff --git a/tools/releasetools/common.py b/tools/releasetools/common.py
+index a00161d..b8d77dd 100644
+--- a/tools/releasetools/common.py
++++ b/tools/releasetools/common.py
+@@ -223,18 +223,20 @@ def LoadRecoveryFSTab(zip, fstab_version):
+       line = line.strip()
+       if not line or line.startswith("#"): continue
+       pieces = line.split()
+-      if len(pieces) != 5:
++      if len(pieces) < 3:
+         raise ValueError("malformed recovery.fstab line: \"%s\"" % (line,))
+ 
+       # Ignore entries that are managed by vold
+-      options = pieces[4]
+-      if "voldmanaged=" in options: continue
++      if len(pieces) == 5:
++      	options = pieces[4]
++      else:
++	options = ""
+ 
+       # It's a good line, parse it
+       p = Partition()
+-      p.device = pieces[0]
+-      p.mount_point = pieces[1]
+-      p.fs_type = pieces[2]
++      p.device = pieces[2]
++      p.mount_point = pieces[0]
++      p.fs_type = pieces[1]
+       p.device2 = None
+       p.length = 0
+ 
