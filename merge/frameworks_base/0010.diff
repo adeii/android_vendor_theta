@@ -1,0 +1,25 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/base (0010): legacy electron beam refactoring
+
+diff --git a/services/java/com/android/server/power/ElectronBeam.java b/services/java/com/android/server/power/ElectronBeam.java
+index aa0a510..51dfecd 100644
+--- a/services/java/com/android/server/power/ElectronBeam.java
++++ b/services/java/com/android/server/power/ElectronBeam.java
+@@ -107,8 +107,8 @@ final class ElectronBeam {
+     /**
+      * Fix for legacy targets
+      */
+-    private String mLegacyMode;
+     private static final String LEGACY_MODE_PERSIST_PROP = "debug.electronbeam.legacy";
++    private static String mLegacyMode = SystemProperties.get(LEGACY_MODE_PERSIST_PROP, "0");
+ 
+     /**
+      * Animates an electron beam warming up.
+@@ -127,7 +127,6 @@ final class ElectronBeam {
+ 
+     public ElectronBeam(DisplayManagerService displayManager) {
+         mDisplayManager = displayManager;
+-        mLegacyMode = SystemProperties.get(LEGACY_MODE_PERSIST_PROP, "0");
+     }
+ 
+     /**

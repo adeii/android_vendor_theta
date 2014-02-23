@@ -1,0 +1,16 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: system/vold (0001): storage switch support
+
+diff --git a/Volume.cpp b/Volume.cpp
+index c175f93..3db6c43 100644
+--- a/Volume.cpp
++++ b/Volume.cpp
+@@ -152,7 +152,7 @@ Volume::Volume(VolumeManager *vm, const char *label, const char *mount_point) {
+         char *first, *second = NULL;
+         const char *delim = ",";
+ 
+-        property_get("ro.vold.switchablepair", switchable, "");
++        property_get("persist.sys.vold.switchablepair", switchable, "");
+ 
+         if (!(first = strtok(switchable, delim))) {
+             SLOGE("Mount switch requested, but no switchable mountpoints found");
