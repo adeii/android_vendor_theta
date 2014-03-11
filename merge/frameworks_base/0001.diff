@@ -1,10 +1,6 @@
 From: Konsta <konsta09@gmail.com>
 Subject: framework/base (0001): add qualcomm fm support
 
-Squashed commit between:
-https://www.codeaurora.org/gitweb/quic/la/?p=platform/frameworks/base.git;a=commit;h=27086d06dec240e8915580208197ab7169ec498e
-https://www.codeaurora.org/gitweb/quic/la/?p=platform/frameworks/base.git;a=commit;h=a776f068da4f45f79d42ce7f9ceb6b4f3f18b8ee
-
 diff --git a/core/java/android/os/Process.java b/core/java/android/os/Process.java
 index aaae3c7..fc00cc5 100644
 --- a/core/java/android/os/Process.java

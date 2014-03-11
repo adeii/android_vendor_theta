@@ -2,69 +2,56 @@ From: ChepKun <ProgrammerKun@gmail.com>
 Subject: frameworks/base (0002): fix ElectronBeam for legacy targets, use debug.electronbeam.legacy=1 in build.prop
 
 diff --git a/services/java/com/android/server/power/ElectronBeam.java b/services/java/com/android/server/power/ElectronBeam.java
-index 379e704..aa0a510 100644
+index 69fa83c..2457ef5 100644
 --- a/services/java/com/android/server/power/ElectronBeam.java
 +++ b/services/java/com/android/server/power/ElectronBeam.java
 @@ -21,6 +21,7 @@ import java.nio.ByteBuffer;
  import java.nio.ByteOrder;
  import java.nio.FloatBuffer;
-
+ 
 +import android.graphics.Bitmap;
  import android.graphics.PixelFormat;
  import android.graphics.SurfaceTexture;
  import android.opengl.EGL14;
-@@ -30,7 +31,9 @@ import android.opengl.EGLDisplay;
+@@ -30,6 +31,7 @@ import android.opengl.EGLDisplay;
  import android.opengl.EGLSurface;
  import android.opengl.GLES10;
  import android.opengl.GLES11Ext;
 +import android.opengl.GLUtils;
  import android.os.Looper;
-+import android.os.SystemProperties;
+ import android.os.SystemProperties;
  import android.util.FloatMath;
- import android.util.Slog;
- import android.view.Display;
-@@ -102,6 +105,12 @@ final class ElectronBeam {
+@@ -105,6 +107,12 @@ final class ElectronBeam {
      private final FloatBuffer mTexCoordBuffer = createNativeFloatBuffer(8);
  
      /**
 +     * Fix for legacy targets
 +     */
-+    private String mLegacyMode;
 +    private static final String LEGACY_MODE_PERSIST_PROP = "debug.electronbeam.legacy";
++    private static String mLegacyMode = SystemProperties.get(LEGACY_MODE_PERSIST_PROP, "0");
 +
 +    /**
       * Animates an electron beam warming up.
       */
      public static final int MODE_WARM_UP = 0;
-@@ -116,9 +125,9 @@ final class ElectronBeam {
-      */
-     public static final int MODE_FADE = 2;
- 
--
-     public ElectronBeam(DisplayManagerService displayManager) {
-         mDisplayManager = displayManager;
-+        mLegacyMode = SystemProperties.get(LEGACY_MODE_PERSIST_PROP, "0");
-     }
- 
-     /**
-@@ -171,9 +180,16 @@ final class ElectronBeam {
+@@ -182,9 +190,16 @@ final class ElectronBeam {
              if (mMode == MODE_FADE) {
                  return true;
              }
 +
-+	if ("1".equals(mLegacyMode)) {
++		if ("1".equals(mLegacyMode)) {
 +            return createEglContext()
 +                    && createEglSurface()
 +                    && captureScreenshotTextureAndSetViewport_Legacy();
-+	} else {
++		} else {
              return createEglContext()
                      && createEglSurface()
                      && captureScreenshotTextureAndSetViewport();
-+	    }	
++			}
          }
          return false;
      }
-@@ -266,46 +282,85 @@ final class ElectronBeam {
+@@ -277,43 +292,85 @@ final class ElectronBeam {
          GLES10.glVertexPointer(2, GLES10.GL_FLOAT, 0, mVertexBuffer);
          GLES10.glEnableClientState(GLES10.GL_VERTEX_ARRAY);
  
@@ -89,24 +76,25 @@ index 379e704..aa0a510 100644
 -        GLES10.glEnableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
 -
 -        // draw the red plane
--        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ar);
+-        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ar, mSwapNeeded);
 -        GLES10.glColorMask(true, false, false, true);
 -        GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 -
 -        // draw the green plane
--        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag);
+-        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag, mSwapNeeded);
 -        GLES10.glColorMask(false, true, false, true);
 -        GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 -
 -        // draw the blue plane
--        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ab);
+-        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ab, mSwapNeeded);
 -        GLES10.glColorMask(false, false, true, true);
 -        GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 -
 -        // clean up after drawing planes
 -        GLES10.glDisable(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
 +
-+	if ("1".equals(mLegacyMode)){
++		if ("1".equals(mLegacyMode)){
++
 +	        // bind texture and set blending for drawing planes
 +	        GLES10.glBindTexture(GLES10.GL_TEXTURE_2D, mTexNames[0]);
 +        	GLES10.glTexEnvx(GLES10.GL_TEXTURE_ENV, GLES10.GL_TEXTURE_ENV_MODE,
@@ -124,23 +112,25 @@ index 379e704..aa0a510 100644
 +        	GLES10.glEnableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
 +	
 +        	// draw the red plane
-+        	setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ar);
++        	setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ar, mSwapNeeded);
 +        	GLES10.glColorMask(true, false, false, true);
 +        	GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 +	
 +        	// draw the green plane
-+        	setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag);
++        	setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag, mSwapNeeded);
 +        	GLES10.glColorMask(false, true, false, true);
 +        	GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 +	
 +        	// draw the blue plane
-+        	setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ab);
++        	setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ab, mSwapNeeded);
 +        	GLES10.glColorMask(false, false, true, true);
 +        	GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 +	
 +        	// clean up after drawing planes
 +        	GLES10.glDisable(GLES10.GL_TEXTURE_2D);
-+	} else {
++
++		} else {
++
 +        	// set-up texturing
 +        	GLES10.glDisable(GLES10.GL_TEXTURE_2D);
 +        	GLES10.glEnable(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
@@ -162,32 +152,29 @@ index 379e704..aa0a510 100644
 +	        GLES10.glEnableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
 +	
 +	        // draw the red plane
-+	        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ar);
++	        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ar, mSwapNeeded);
 +	        GLES10.glColorMask(true, false, false, true);
 +	        GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 +	
 +	        // draw the green plane
-+	        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag);
++	        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag, mSwapNeeded);
 +	        GLES10.glColorMask(false, true, false, true);
 +	        GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 +	
 +	        // draw the blue plane
-+	        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ab);
++	        setVStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ab, mSwapNeeded);
 +	        GLES10.glColorMask(false, false, true, true);
 +	        GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
 +	
 +	        // clean up after drawing planes
 +	        GLES10.glDisable(GLES11Ext.GL_TEXTURE_EXTERNAL_OES);
-+} // Legacy mode
++
++		} // Legacy mode
 +
          GLES10.glDisableClientState(GLES10.GL_TEXTURE_COORD_ARRAY);
          GLES10.glColorMask(true, true, true, true);
  
-+
-         // draw the white highlight (we use the last vertices)
-         if (mMode == MODE_COOL_DOWN) {
-             GLES10.glColor4f(ag, ag, ag, 1.0f);
-@@ -319,10 +374,10 @@ final class ElectronBeam {
+@@ -330,10 +387,10 @@ final class ElectronBeam {
  
      /**
       * Draws a frame where the electron beam has been stretched out into
@@ -201,34 +188,37 @@ index 379e704..aa0a510 100644
       */
      private void drawHStretch(float stretch) {
          // compute interpolation scale factor
-@@ -338,7 +393,7 @@ final class ElectronBeam {
+@@ -349,7 +406,7 @@ final class ElectronBeam {
  
              // draw narrow fading white line
-             setHStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag);
+             setHStretchQuad(mVertexBuffer, mDisplayWidth, mDisplayHeight, ag, mSwapNeeded);
 -            GLES10.glColor4f(1.0f - ag, 1.0f - ag, 1.0f - ag, 1.0f);
 +            GLES10.glColor4f(1.0f - ag*0.75f, 1.0f - ag*0.75f, 1.0f - ag*0.75f, 1.0f);
              GLES10.glDrawArrays(GLES10.GL_TRIANGLE_FAN, 0, 4);
  
              // clean up
-@@ -355,7 +410,7 @@ final class ElectronBeam {
-     }
- 
-     private static void setHStretchQuad(FloatBuffer vtx, float dw, float dh, float a) {
--        final float w = dw + (dw * a);
-+        final float w = 2 * dw * (1.0f - a);
-         final float h = 1.0f;
+@@ -379,9 +436,9 @@ final class ElectronBeam {
+         final float h;
+         if (swap) {
+             w = 1.0f;
+-            h = dh + (dh * a);
++            h = 2 * dh * (1.0f - a);
+         } else {
+-            w = dw + (dw * a);
++            w = 2 * dw * (1.0f - a);
+             h = 1.0f;
+         }
          final float x = (dw - w) * 0.5f;
-         final float y = (dh - h) * 0.5f;
-@@ -376,6 +431,91 @@ final class ElectronBeam {
+@@ -403,6 +460,91 @@ final class ElectronBeam {
          vtx.put(7, y);
      }
  
-+ private static int nextPowerOfTwo(int value) {
++ 	private static int nextPowerOfTwo(int value) {
 +        return 1 << (32 - Integer.numberOfLeadingZeros(value));
 +    }
 +
-+private boolean captureScreenshotTextureAndSetViewport_Legacy() {
-+      Bitmap bitmap = SurfaceControl.screenshot(mDisplayWidth, mDisplayHeight,
++	private boolean captureScreenshotTextureAndSetViewport_Legacy() {
++      	Bitmap bitmap = SurfaceControl.screenshot(mDisplayWidth, mDisplayHeight,
 +                0, ELECTRON_BEAM_LAYER - 1);
 +        if (bitmap == null) {
 +            Slog.e(TAG, "Could not take a screenshot!");
@@ -294,7 +284,7 @@ index 379e704..aa0a510 100644
 +        	        GLES10.glViewport(0, 0, mDisplayWidth, mDisplayHeight);
 +        	        GLES10.glMatrixMode(GLES10.GL_PROJECTION);
 +        	        GLES10.glLoadIdentity();
-+        	        GLES10.glOrthof(0, mDisplayWidth, 0, mDisplayHeight, 0, 1);
++       	        GLES10.glOrthof(0, mDisplayWidth, 0, mDisplayHeight, 0, 1);
 +        	        GLES10.glMatrixMode(GLES10.GL_MODELVIEW);
 +        	        GLES10.glLoadIdentity();
 +        	        GLES10.glMatrixMode(GLES10.GL_TEXTURE);

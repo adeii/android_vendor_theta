@@ -1,0 +1,51 @@
+From: Konsta <konsta09@gmail.com>
+Subject: packages/Settings (0001): add battery bar
+
+diff --git a/res/values/cm_arrays.xml b/res/values/cm_arrays.xml
+index dac3fff..b66822a 100644
+--- a/res/values/cm_arrays.xml
++++ b/res/values/cm_arrays.xml
+@@ -381,6 +381,7 @@
+         <item>@string/status_bar_battery_status_percentage</item>
+         <item>@string/status_bar_battery_status_circle</item>
+         <item>@string/status_bar_battery_status_circle_percentage</item>
++        <item>@string/status_bar_battery_status_statusbar</item>
+         <item>@string/status_bar_style_hidden</item>
+     </string-array>
+ 
+@@ -389,6 +390,7 @@
+         <item>1</item>
+         <item>2</item>
+         <item>3</item>
++        <item>5</item>
+         <item>4</item>
+     </string-array>
+ 
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index 4218c50..b26cb0e 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -599,6 +599,7 @@
+     <string name="status_bar_battery_status_percentage">Percentage</string>
+     <string name="status_bar_battery_status_circle">Circle</string>
+     <string name="status_bar_battery_status_circle_percentage">Circle with percentage</string>
++    <string name="status_bar_battery_status_statusbar">Status bar</string>
+     <string name="status_bar_notif_count_title">Show notification count</string>
+     <string name="status_bar_notif_count_summary">Display the number of pending notifications</string>
+
+diff --git a/res/values-ru/cm_strings.xml b/res/values-ru/cm_strings.xml
+index 045b56c..e6d0a20 100644
+--- a/res/values-ru/cm_strings.xml
++++ b/res/values-ru/cm_strings.xml
+@@ -538,6 +538,7 @@
+     <string name="status_bar_battery_status_percentage">Процентный</string>
+     <string name="status_bar_battery_status_circle">Круг</string>
+     <string name="status_bar_battery_status_circle_percentage">Круг с процентами</string>
++    <string name="status_bar_battery_status_statusbar">Линия</string>
+ 
+     <!-- Status bar notification count -->
+     <string name="status_bar_notif_count_title">Счётчик уведомлений</string>
+ 
+-- 
+1.7.9.5
+

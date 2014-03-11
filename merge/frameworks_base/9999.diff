@@ -130,16 +130,3 @@ index 6b9c37f..96ecf79 100644
      }
  
      @Override
-diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkController.java b/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkController.java
-index f950c71..8b7a753 100644
---- a/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkController.java
-+++ b/packages/SystemUI/src/com/android/systemui/statusbar/policy/MSimNetworkController.java
-@@ -58,7 +58,7 @@ import com.android.systemui.R;
- public class MSimNetworkController extends NetworkController {
-     // debug
-     static final String TAG = "StatusBar.MSimNetworkController";
--    static final boolean DEBUG = false;
-+    static final boolean DEBUG = true;
-     static final boolean CHATTY = true; // additional diagnostics, but not logspew
- 
-     // telephony
