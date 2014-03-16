@@ -1,5 +1,5 @@
 # Inherit common CM stuff
-$(call inherit-product, vendor/cm/config/common_full.mk)
+$(call inherit-product, vendor/theta/config/common_full.mk)
 
 # Default ringtone
 PRODUCT_PROPERTY_OVERRIDES += \

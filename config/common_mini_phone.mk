@@ -1,11 +1,11 @@
 # Inherit common CM stuff
-$(call inherit-product, vendor/cm/config/common.mk)
+$(call inherit-product, vendor/theta/config/common.mk)
 
 # Bring in all audio files
 include frameworks/base/data/sounds/NewAudio.mk
 
 # Include CM audio files
-include vendor/cm/config/cm_audio.mk
+include vendor/theta/config/cm_audio.mk
 
 # Default ringtone
 PRODUCT_PROPERTY_OVERRIDES += \
@@ -18,4 +18,4 @@ ifeq ($(TARGET_SCREEN_WIDTH) $(TARGET_SCREEN_HEIGHT),$(space))
         vendor/cm/prebuilt/common/bootanimation/320.zip:system/media/bootanimation.zip
 endif
 
-$(call inherit-product, vendor/cm/config/telephony.mk)
+$(call inherit-product, vendor/theta/config/telephony.mk)
