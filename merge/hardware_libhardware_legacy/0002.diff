@@ -1,25 +1,26 @@
-From: Daz Jones <yuki@thebronasium.com>
-Subject: hardware/libhardware_legacy (0002): add support for custom Wi-Fi implementations
+From: sakindia123 <sa6915@gmail.com>
+Subject: hardware/libhardware_legacy (0002): Add EVRCB & EVRCWB formats
 
-diff --git a/wifi/Android.mk b/wifi/Android.mk
-index 51afe3a..788520f 100644
---- a/wifi/Android.mk
-+++ b/wifi/Android.mk
-@@ -43,7 +43,13 @@ ifdef WIFI_EXT_MODULE_NAME
- LOCAL_CFLAGS += -DWIFI_EXT_MODULE_NAME=\"$(WIFI_EXT_MODULE_NAME)\"
- endif
- 
--LOCAL_SRC_FILES += wifi/wifi.c
-+ifeq ($(TARGET_CUSTOM_WIFI),)
-+       LOCAL_SRC_FILES += \
-+               wifi/wifi.c
-+else
-+       LOCAL_SRC_FILES += \
-+               $(TARGET_CUSTOM_WIFI)
-+endif
- 
- ifeq ($(BOARD_HAVE_SAMSUNG_WIFI),true)
- LOCAL_CFLAGS += -DSAMSUNG_WIFI
+#  * needed for msm7x27a and msm8660
+#  * needed to compile audio hal from caf
+
+diff --git a/include/hardware_legacy/AudioSystemLegacy.h b/include/hardware_legacy/AudioSystemLegacy.h
+index 6296b8b..a3241be 100644
+--- a/include/hardware_legacy/AudioSystemLegacy.h
++++ b/include/hardware_legacy/AudioSystemLegacy.h
+@@ -133,6 +133,12 @@ public:
+         HE_AAC_V1           = 0x05000000,
+         HE_AAC_V2           = 0x06000000,
+         VORBIS              = 0x07000000,
++#ifdef QCOM_HARDWARE
++        EVRC                = 0x08000000,
++        QCELP               = 0x09000000,
++        EVRCB               = 0x10000000,
++        EVRCWB              = 0x11000000,
++#endif
+         MAIN_FORMAT_MASK    = 0xFF000000,
+         SUB_FORMAT_MASK     = 0x00FFFFFF,
+         // Aliases
 -- 
 1.8.1.2
 

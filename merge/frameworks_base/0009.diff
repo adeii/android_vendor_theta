@@ -1,33 +1,60 @@
 From: Konsta <konsta09@gmail.com>
-Subject: frameworks/base (0009): swipe to switch notification changes
+Subject: frameworks/base (0009): custom navbar height
 
--increase swipe gesture lenght
--don't limit swipe detection to bottom bar
-
-diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/NotificationPanelView.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/NotificationPanelView.java
-index 767abf7..8af2155 100644
---- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/NotificationPanelView.java
-+++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/NotificationPanelView.java
-@@ -40,7 +40,7 @@ public class NotificationPanelView extends PanelView {
-     private static final float STATUS_BAR_SETTINGS_RIGHT_PERCENTAGE = 0.2f;
-     private static final float STATUS_BAR_SWIPE_TRIGGER_PERCENTAGE = 0.05f;
-     private static final float STATUS_BAR_SWIPE_VERTICAL_MAX_PERCENTAGE = 0.025f;
--    private static final float STATUS_BAR_SWIPE_MOVE_PERCENTAGE = 0.2f;
-+    private static final float STATUS_BAR_SWIPE_MOVE_PERCENTAGE = 0.3f;
+diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
+index 34e5b18..dd57f11 100644
+--- a/core/java/android/provider/Settings.java
++++ b/core/java/android/provider/Settings.java
+@@ -3448,6 +3448,12 @@ public final class Settings {
+         public static final String SHOW_NAVBAR = "show_navbar";
  
-     private Drawable mHandleBar;
-     private int mHandleBarHeight;
-@@ -134,9 +134,7 @@ public class NotificationPanelView extends PanelView {
-                 case MotionEvent.ACTION_DOWN:
-                     mGestureStartX = event.getX(0);
-                     mGestureStartY = event.getY(0);
--                    mTrackingSwipe = isFullyExpanded() &&
--                        // Pointer is at the handle portion of the view?
--                        mGestureStartY > getHeight() - mHandleBarHeight - getPaddingBottom();
-+                    mTrackingSwipe = isFullyExpanded();
-                     mOkToFlip = getExpandedHeight() == 0;
-                     if (event.getX(0) > getWidth() * (1.0f - STATUS_BAR_SETTINGS_RIGHT_PERCENTAGE) &&
-                             Settings.System.getIntForUser(getContext().getContentResolver(),
--- 
-1.7.9.5
-
+         /**
++         * Navigation bar height
++         * @hide
++         */
++        public static final String NAV_BUTTONS_HEIGHT = "nav_buttons_height";
++
++        /**
+          * Custom navring actions
+          *
+          * @hide
+diff --git a/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java b/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
+index 110acd0..1ad6568 100644
+--- a/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
++++ b/policy/src/com/android/internal/policy/impl/PhoneWindowManager.java
+@@ -693,6 +693,9 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+                     Settings.System.USE_EDGE_SERVICE_FOR_GESTURES), false, this,
+                     UserHandle.USER_ALL);
+             resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.NAV_BUTTONS_HEIGHT), false, this,
++                    UserHandle.USER_ALL);
++            resolver.registerContentObserver(Settings.System.getUriFor(
+                     Settings.System.DEV_FORCE_SHOW_NAVBAR), false, this,
+                     UserHandle.USER_ALL);
+ 
+@@ -1664,6 +1667,25 @@ public class PhoneWindowManager implements WindowManagerPolicy {
+             if (mImmersiveModeConfirmation != null) {
+                 mImmersiveModeConfirmation.loadSetting();
+             }
++
++            // Update navigation bar dimensions
++            int mNavButtonsHeight = Settings.System.getInt(resolver,
++                    Settings.System.NAV_BUTTONS_HEIGHT, 48);
++
++            // Height of the navigation bar when presented horizontally at bottom
++            mNavigationBarHeightForRotation[mPortraitRotation] =
++            mNavigationBarHeightForRotation[mUpsideDownRotation] =
++            mNavigationBarHeightForRotation[mLandscapeRotation] =
++            mNavigationBarHeightForRotation[mSeascapeRotation] =
++                    mNavButtonsHeight * DisplayMetrics.DENSITY_DEVICE/DisplayMetrics.DENSITY_DEFAULT;
++
++            // Width of the navigation bar when presented vertically along one side
++            mNavigationBarWidthForRotation[mPortraitRotation] =
++            mNavigationBarWidthForRotation[mUpsideDownRotation] =
++            mNavigationBarWidthForRotation[mLandscapeRotation] =
++            mNavigationBarWidthForRotation[mSeascapeRotation] =
++                    (mNavButtonsHeight - (mNavButtonsHeight / 8))
++                    * DisplayMetrics.DENSITY_DEVICE/DisplayMetrics.DENSITY_DEFAULT;
+         }
+ 
+         if (updateRotation) {

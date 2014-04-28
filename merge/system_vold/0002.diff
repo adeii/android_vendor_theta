@@ -1,0 +1,23 @@
+From: dhacker29 <davidhackerdvm@gmail.com>
+Subject: system/vold (0002): allow Settings to determine if a switchable pair exists
+
+This will eliminate the need for pre-configured device pairs listed
+in the build.prop, and display the setting if a pair exists.
+This exapnds on commit dc8d157d73fb88ee33b38e724a8aabe7d5e53eee
+
+diff --git a/DirectVolume.cpp b/DirectVolume.cpp
+index b176d15..de7363e 100644
+--- a/DirectVolume.cpp
++++ b/DirectVolume.cpp
+@@ -73,7 +73,7 @@ DirectVolume::DirectVolume(VolumeManager *vm, const fstab_rec* rec, int flags) :
+         int lblidx = strlen(Volume::FUSE_DIR) + 1;
+         bool swap = true;
+ 
+-        property_get("ro.vold.switchablepair", switchable, "");
++        property_get("persist.sys.vold.switchablepair", switchable, "");
+ 
+         if (!(first = strtok(switchable, delim))) {
+             SLOGE("Mount switch requested, but no switchable mountpoints found");
+-- 
+1.8.1.2
+

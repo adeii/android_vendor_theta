@@ -1,50 +1,16 @@
 From: ChepKun <ProgrammerKun@gmail.com>
-Subject: frameworks/base (0005): Use RGB565 surface for bitmaps
+Subject: frameworks/base (0005): force highend gfx by default
 
-diff --git a/core/java/android/view/ViewRootImpl.java b/core/java/android/view/ViewRootImpl.java
-index 6b2ed91..6903d62 100644
---- a/core/java/android/view/ViewRootImpl.java
-+++ b/core/java/android/view/ViewRootImpl.java
-@@ -1193,7 +1193,7 @@ public final class ViewRootImpl implements ViewParent,
-             // We used to use the following condition to choose 32 bits drawing caches:
-             // PixelFormat.hasAlpha(lp.format) || lp.format == PixelFormat.RGBX_8888
-             // However, windows are now always 32 bits by default, so choose 32 bits
--            attachInfo.mUse32BitDrawingCache = true;
-+            attachInfo.mUse32BitDrawingCache = PixelFormat.formatHasAlpha(lp.format) || lp.format == PixelFormat.RGBX_8888;
-             attachInfo.mHasWindowFocus = false;
-             attachInfo.mWindowVisibility = viewVisibility;
-             attachInfo.mRecomputeGlobalAttributes = false;
-diff --git a/graphics/java/android/graphics/Bitmap.java b/graphics/java/android/graphics/Bitmap.java
-index 89abdef..4203317 100644
---- a/graphics/java/android/graphics/Bitmap.java
-+++ b/graphics/java/android/graphics/Bitmap.java
-@@ -611,6 +611,7 @@ public final class Bitmap implements Parcelable {
-             canvas.concat(m);
+diff --git a/core/java/android/app/ActivityManager.java b/core/java/android/app/ActivityManager.java
+index bfc676a..0fac7a8 100644
+--- a/core/java/android/app/ActivityManager.java
++++ b/core/java/android/app/ActivityManager.java
+@@ -467,7 +467,7 @@ public class ActivityManager {
+      * @hide
+      */
+     public static boolean isForcedHighEndGfx() {
+-        return SystemProperties.getBoolean("persist.sys.force_highendgfx", false);
++        return SystemProperties.getBoolean("persist.sys.force_highendgfx", true);
+     }
  
-             paint = new Paint();
-+	    paint.setDither(true);
-             paint.setFilterBitmap(filter);
-             if (transformed) {
-                 paint.setAntiAlias(true);
-diff --git a/graphics/java/android/graphics/BitmapFactory.java b/graphics/java/android/graphics/BitmapFactory.java
-index f155cd2..9c5e932 100644
---- a/graphics/java/android/graphics/BitmapFactory.java
-+++ b/graphics/java/android/graphics/BitmapFactory.java
-@@ -41,7 +41,7 @@ public class BitmapFactory {
-          * the same result from the decoder as if null were passed.
-          */
-         public Options() {
--            inDither = false;
-+            inDither = true;
-             inScaled = true;
-         }
- 
-@@ -105,7 +105,7 @@ public class BitmapFactory {
-          * Image are loaded with the {@link Bitmap.Config#ARGB_8888} config by
-          * default.
-          */
--        public Bitmap.Config inPreferredConfig = Bitmap.Config.ARGB_8888;
-+        public Bitmap.Config inPreferredConfig = Bitmap.Config.RGB_565;
- 
-         /**
-          * If dither is true, the decoder will attempt to dither the decoded
+     /**
