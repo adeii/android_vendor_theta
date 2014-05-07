@@ -1,0 +1,224 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0004): storage switch support
+
+diff --git a/res/values-ru/cm_strings.xml b/res/values-ru/cm_strings.xml
+index 5946a9d..a368940 100644
+--- a/res/values-ru/cm_strings.xml
++++ b/res/values-ru/cm_strings.xml
+@@ -694,6 +694,9 @@
+   <string name="status_bar_double_tap_to_sleep_title">Выключать экран при двойном нажатии</string>
+   <string name="development_shortcut_title">Дополнительные пункты меню</string>
+   <string name="development_shortcut_summary">Показывать пункты «Стереть данные» и «Остановить» в уведомлениях и списке недавних приложений</string>
++  <string name="storage_switch_title">Память по умолчанию</string>
++  <string name="storage_switch_reboot_prompt_title">Требуется перезагрузка</string>
++  <string name="storage_switch_reboot_prompt_message">Для того, чтобы изменения вступили в силу, требуется перезагрузка.\n\nВы хотите выполнить перезагрузку сейчас?</string>
+   <string name="usb_mass_storage_title">USB-накопитель</string>
+   <string name="usb_mass_storage_summary">Позволяет передавать файлы путём использования SD-карты устройства в качестве съёмного диска</string>
+   <string name="storage_rescan_media">Пересканировать память</string>
+diff --git a/res/values/cm_arrays.xml b/res/values/cm_arrays.xml
+index 516be93..cb283fd 100644
+--- a/res/values/cm_arrays.xml
++++ b/res/values/cm_arrays.xml
+@@ -621,6 +621,17 @@
+         <item>1</item>
+     </string-array>
+ 
++    <!-- Storage switch -->
++    <string-array name="storage_switch_entries" translatable="false">
++        <item>@string/internal_storage</item>
++        <item>@string/sd_card_storage</item>
++    </string-array>
++
++    <string-array name="storage_switch_values" translatable="false">
++        <item>0</item>
++        <item>1</item>
++    </string-array>
++
+     <!-- App ops, extension of AOSP app_ops_summaries and app_ops_labels -->
+     <string-array name="app_ops_summaries_cm" translatable="false">
+         <item>@string/app_ops_summaries_coarse_location</item>
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index 696e68b..a456c56 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -977,6 +977,11 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+     <string name="development_shortcut_title">Development shortcut</string>
+     <string name="development_shortcut_summary">Enable \'wipe data\' and \'force close\' options in notification area and recent apps list</string>
+ 
++    <!-- Storage switch -->
++    <string name="storage_switch_title">Default storage location</string>
++    <string name="storage_switch_reboot_prompt_title">Reboot required</string>
++    <string name="storage_switch_reboot_prompt_message">In order to apply the changed configuration, a reboot is required.\n\nDo you want to reboot now?</string>
++
+     <!-- USB Mass Storage -->
+     <string name="usb_mass_storage_title">Mass storage (UMS)</string>
+     <string name="usb_mass_storage_summary">Lets you transfer files between your computer and SD card by mounting it as a flash device</string>
+diff --git a/res/xml/device_info_memory.xml b/res/xml/device_info_memory.xml
+index e905f39..c192968 100644
+--- a/res/xml/device_info_memory.xml
++++ b/res/xml/device_info_memory.xml
+@@ -17,6 +17,12 @@
+ <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+         android:title="@string/storage_settings_title">
+ 
++        <ListPreference
++            android:key="storage_switch"
++            android:title="@string/storage_switch_title"
++            android:entries="@array/storage_switch_entries"
++            android:entryValues="@array/storage_switch_values" />
++
+ <!-- Preference categories are dynamically created based on the list of available storage volumes -->
+ 
+ </PreferenceScreen>
+diff --git a/src/com/android/settings/deviceinfo/Memory.java b/src/com/android/settings/deviceinfo/Memory.java
+index 52fef32..1947949 100644
+--- a/src/com/android/settings/deviceinfo/Memory.java
++++ b/src/com/android/settings/deviceinfo/Memory.java
+@@ -32,16 +32,21 @@ import android.hardware.usb.UsbManager;
+ import android.os.Bundle;
+ import android.os.Environment;
+ import android.os.IBinder;
++import android.os.Handler;
++import android.os.PowerManager;
+ import android.os.RemoteException;
+ import android.os.ServiceManager;
++import android.os.SystemProperties;
+ import android.os.UserManager;
+ import android.os.storage.IMountService;
+ import android.os.storage.StorageEventListener;
+ import android.os.storage.StorageManager;
+ import android.os.storage.StorageVolume;
++import android.preference.ListPreference;
+ import android.preference.Preference;
+ import android.preference.PreferenceActivity;
+ import android.preference.PreferenceScreen;
++import android.text.TextUtils;
+ import android.util.Log;
+ import android.view.Menu;
+ import android.view.MenuInflater;
+@@ -60,7 +65,8 @@ import java.util.List;
+  * Panel showing storage usage on disk for known {@link StorageVolume} returned
+  * by {@link StorageManager}. Calculates and displays usage of data types.
+  */
+-public class Memory extends SettingsPreferenceFragment {
++public class Memory extends SettingsPreferenceFragment implements
++        Preference.OnPreferenceChangeListener{
+     private static final String TAG = "MemorySettings";
+ 
+     private static final String TAG_CONFIRM_CLEAR_CACHE = "confirmClearCache";
+@@ -68,6 +74,10 @@ public class Memory extends SettingsPreferenceFragment {
+     private static final int DLG_CONFIRM_UNMOUNT = 1;
+     private static final int DLG_ERROR_UNMOUNT = 2;
+ 
++    private static final String KEY_STORAGE_SWITCH = "storage_switch";
++    private static final String VOLD_SWITCH_PERSIST_PROP = "persist.sys.vold.switchexternal";
++    private static final String VOLD_SWITCHABLEPAIR_PROP = "persist.sys.vold.switchablepair";
++
+     // The mountToggle Preference that has last been clicked.
+     // Assumes no two successive unmount event on 2 different volumes are performed before the first
+     // one's preference is disabled
+@@ -81,6 +91,8 @@ public class Memory extends SettingsPreferenceFragment {
+ 
+     private ArrayList<StorageVolumePreferenceCategory> mCategories = Lists.newArrayList();
+ 
++    private ListPreference mStorageSwitchPreference;
++
+     @Override
+     public void onCreate(Bundle icicle) {
+         super.onCreate(icicle);
+@@ -94,6 +106,31 @@ public class Memory extends SettingsPreferenceFragment {
+ 
+         addPreferencesFromResource(R.xml.device_info_memory);
+ 
++	// Storage switch
++        if (!Environment.isExternalStorageEmulated()) {
++            Log.i(TAG, "Checking to see if vold switch is possible on this device.");
++            String PRIMARY_STORAGE = System.getenv("EXTERNAL_STORAGE");
++            String SECONDARY_STORAGE = System.getenv("SECONDARY_STORAGE");
++            if (!TextUtils.isEmpty(PRIMARY_STORAGE) && !TextUtils.isEmpty(SECONDARY_STORAGE)) {
++                SystemProperties.set(VOLD_SWITCHABLEPAIR_PROP, PRIMARY_STORAGE + ',' +
++                        SECONDARY_STORAGE);
++                Log.i(TAG, "Setting persist.sys.vold.switchablepair=" + PRIMARY_STORAGE + ',' +
++                        SECONDARY_STORAGE);
++            } else {
++                Log.i(TAG, "Vold switch not possible on this device.");
++            }
++        }
++
++        if (SystemProperties.get(VOLD_SWITCHABLEPAIR_PROP).equals("")) {
++            removePreference(KEY_STORAGE_SWITCH);
++        } else {
++            mStorageSwitchPreference = (ListPreference) findPreference(KEY_STORAGE_SWITCH);
++            String switchExternal = SystemProperties.get(VOLD_SWITCH_PERSIST_PROP, "0");
++            mStorageSwitchPreference.setValue(String.valueOf(switchExternal));
++            updateStorageSwitchPreferenceDescription(Integer.parseInt(switchExternal));
++            mStorageSwitchPreference.setOnPreferenceChangeListener(this);
++	}
++
+         addCategory(StorageVolumePreferenceCategory.buildForInternal(context));
+ 
+         final StorageVolume[] storageVolumes = mStorageManager.getVolumeList();
+@@ -106,6 +143,19 @@ public class Memory extends SettingsPreferenceFragment {
+         setHasOptionsMenu(true);
+     }
+ 
++    private void updateStorageSwitchPreferenceDescription(int currentStorage) {
++        ListPreference preference = mStorageSwitchPreference;
++        String summary;
++        final CharSequence[] entries = preference.getEntries();
++        final CharSequence[] values = preference.getEntryValues();
++        if (entries == null || entries.length == 0) {
++            summary = "";
++        } else {
++            summary = entries[currentStorage].toString();
++        }
++        preference.setSummary(summary);
++    }
++
+     private void addCategory(StorageVolumePreferenceCategory category) {
+         mCategories.add(category);
+         getPreferenceScreen().addPreference(category);
+@@ -250,6 +300,43 @@ public class Memory extends SettingsPreferenceFragment {
+         return false;
+     }
+ 
++    @Override
++    public boolean onPreferenceChange(Preference preference, Object objValue) {
++	final String key = preference.getKey();
++        if (KEY_STORAGE_SWITCH.equals(key)) {
++		String switchExternal = SystemProperties.get(VOLD_SWITCH_PERSIST_PROP, "0");
++		if (!switchExternal.equals((String) objValue)) {
++            	    SystemProperties.set(VOLD_SWITCH_PERSIST_PROP,(String) objValue);
++                    updateStorageSwitchPreferenceDescription(Integer.parseInt((String) objValue));
++		    showRebootPrompt();
++		}
++        }
++
++        return true;
++    }
++
++    private void showRebootPrompt() {
++        AlertDialog dialog = new AlertDialog.Builder(getActivity())
++                .setTitle(R.string.storage_switch_reboot_prompt_title)
++                .setMessage(R.string.storage_switch_reboot_prompt_message)
++                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
++                    @Override
++                    public void onClick(DialogInterface dialog, int which) {
++			Handler handler = new Handler(); 
++    			handler.postDelayed(new Runnable() { 
++         			public void run() { 
++          				PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
++                    	        	pm.reboot(null);
++         			} 
++			}, 1000); 
++		    }
++                })
++                .setNegativeButton(R.string.no, null)
++                .create();
++
++        dialog.show();
++    }
++
+     private final BroadcastReceiver mMediaScannerReceiver = new BroadcastReceiver() {
+         @Override
+         public void onReceive(Context context, Intent intent) {

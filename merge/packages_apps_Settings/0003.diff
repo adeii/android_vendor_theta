@@ -1,0 +1,52 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0003): show alert in performance settings one time only
+
+diff --git a/src/com/android/settings/cyanogenmod/PerformanceSettings.java b/src/com/android/settings/cyanogenmod/PerformanceSettings.java
+index 1c4d413..90bcdc0 100644
+--- a/src/com/android/settings/cyanogenmod/PerformanceSettings.java
++++ b/src/com/android/settings/cyanogenmod/PerformanceSettings.java
+@@ -50,6 +50,8 @@ public class PerformanceSettings extends SettingsPreferenceFragment implements
+     private static final String FORCE_HIGHEND_GFX_PREF = "pref_force_highend_gfx";
+     private static final String FORCE_HIGHEND_GFX_PERSIST_PROP = "persist.sys.force_highendgfx";
+ 
++    private static final String SHOW_ALERT_DIALOG_PROP = "ro.performance.show_alert_dialog";
++
+     private ListPreference mPerfProfilePref;
+     private CheckBoxPreference mUse16bppAlphaPref;
+     private CheckBoxPreference mForceHighEndGfx;
+@@ -115,18 +117,23 @@ public class PerformanceSettings extends SettingsPreferenceFragment implements
+         }
+ 
+         /* Display the warning dialog */
+-        alertDialog = new AlertDialog.Builder(getActivity()).create();
+-        alertDialog.setTitle(R.string.performance_settings_warning_title);
+-        alertDialog.setMessage(getResources().getString(R.string.performance_settings_warning));
+-        alertDialog.setCancelable(false);
+-        alertDialog.setButton(DialogInterface.BUTTON_POSITIVE,
+-                getResources().getString(com.android.internal.R.string.ok),
+-                new DialogInterface.OnClickListener() {
+-                    public void onClick(DialogInterface dialog, int which) {
+-                        return;
+-                    }
+-                });
+-        alertDialog.show();
++	boolean showAlertDialog = Settings.System.getInt(getContentResolver(), SHOW_ALERT_DIALOG_PROP, 1) == 1;
++	if (showAlertDialog){
++	    Settings.System.putInt(getContentResolver(), SHOW_ALERT_DIALOG_PROP, 0);
++	    // Show alert
++            alertDialog = new AlertDialog.Builder(getActivity()).create();
++            alertDialog.setTitle(R.string.performance_settings_warning_title);
++            alertDialog.setMessage(getResources().getString(R.string.performance_settings_warning));
++            alertDialog.setCancelable(false);
++            alertDialog.setButton(DialogInterface.BUTTON_POSITIVE,
++                    getResources().getString(com.android.internal.R.string.ok),
++                    new DialogInterface.OnClickListener() {
++                        public void onClick(DialogInterface dialog, int which) {
++                            return;
++                        }
++                    });
++            alertDialog.show();
++	}
+     }
+ 
+     @Override

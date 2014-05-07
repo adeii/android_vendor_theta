@@ -1,0 +1,76 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/base (0012): storage switch support
+
+diff --git a/core/res/res/values/symbols.xml b/core/res/res/values/symbols.xml
+index c6c6234..9a0bfd3 100644
+--- a/core/res/res/values/symbols.xml
++++ b/core/res/res/values/symbols.xml
+@@ -1653,6 +1653,7 @@
+   <java-symbol type="style" name="Theme.Dialog.AppError" />
+   <java-symbol type="style" name="Theme.Toast" />
+   <java-symbol type="xml" name="storage_list" />
++  <java-symbol type="xml" name="storage_list_switched" />
+   <java-symbol type="bool" name="config_dreamsSupported" />
+   <java-symbol type="bool" name="config_dreamsEnabledByDefault" />
+   <java-symbol type="bool" name="config_dreamsActivatedOnDockByDefault" />
+diff --git a/core/res/res/xml/storage_list_switched.xml b/core/res/res/xml/storage_list_switched.xml
+new file mode 100644
+index 0000000..be88dee
+--- /dev/null
++++ b/core/res/res/xml/storage_list_switched.xml
+@@ -0,0 +1,25 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!--
++**
++** Copyright 2011, The Android Open Source Project
++**
++** Licensed under the Apache License, Version 2.0 (the "License")
++** you may not use this file except in compliance with the License.
++** You may obtain a copy of the License at
++**
++**     http://www.apache.org/licenses/LICENSE-2.0
++**
++** Unless required by applicable law or agreed to in writing, software
++** distributed under the License is distributed on an "AS IS" BASIS,
++** WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++** See the License for the specific language governing permissions and
++** limitations under the License.
++*/
++-->
++
++<!-- See storage config details at http://source.android.com/tech/storage/ -->
++
++<StorageList xmlns:android="http://schemas.android.com/apk/res/android">
++    <!-- this file is needed for storage switch feature -->
++
++</StorageList>
+diff --git a/services/java/com/android/server/MountService.java b/services/java/com/android/server/MountService.java
+index c0906c9..922e60e 100644
+--- a/services/java/com/android/server/MountService.java
++++ b/services/java/com/android/server/MountService.java
+@@ -122,6 +122,8 @@ class MountService extends IMountService.Stub
+ 
+     private static final String VOLD_TAG = "VoldConnector";
+ 
++    private static final String VOLD_SWITCH_PERSIST_PROP = "persist.sys.vold.switchexternal";
++
+     /** Maximum number of ASEC containers allowed to be mounted. */
+     private static final int MAX_CONTAINERS = 250;
+ 
+@@ -1225,8 +1227,15 @@ class MountService extends IMountService.Stub
+         mVolumeStates.clear();
+ 
+         Resources resources = mContext.getResources();
++	
++	int id;
++	String switchExternal = SystemProperties.get(VOLD_SWITCH_PERSIST_PROP, "0");
++	if (switchExternal.equals("1")) {
++	    id = com.android.internal.R.xml.storage_list_switched;
++	} else {
++            id = com.android.internal.R.xml.storage_list;
++	}
+ 
+-        int id = com.android.internal.R.xml.storage_list;
+         XmlResourceParser parser = resources.getXml(id);
+         AttributeSet attrs = Xml.asAttributeSet(parser);
+ 

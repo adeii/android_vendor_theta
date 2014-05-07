@@ -1,16 +1,16 @@
 From: ChepKun <ProgrammerKun@gmail.com>
-Subject: frameworks/base (0005): force highend gfx by default
+Subject: frameworks/base (0005): force translucent status bar without high end gfx
 
-diff --git a/core/java/android/app/ActivityManager.java b/core/java/android/app/ActivityManager.java
-index bfc676a..0fac7a8 100644
---- a/core/java/android/app/ActivityManager.java
-+++ b/core/java/android/app/ActivityManager.java
-@@ -467,7 +467,7 @@ public class ActivityManager {
-      * @hide
-      */
-     public static boolean isForcedHighEndGfx() {
--        return SystemProperties.getBoolean("persist.sys.force_highendgfx", false);
-+        return SystemProperties.getBoolean("persist.sys.force_highendgfx", true);
-     }
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/phone/BarTransitions.java b/packages/SystemUI/src/com/android/systemui/statusbar/phone/BarTransitions.java
+index 41d7384..33628d9 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/phone/BarTransitions.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/phone/BarTransitions.java
+@@ -49,7 +49,7 @@ public class BarTransitions {
  
-     /**
+     private final String mTag;
+     private final View mView;
+-    private final boolean mSupportsTransitions = ActivityManager.isHighEndGfx();
++    private final boolean mSupportsTransitions = true;
+     private final BarBackgroundDrawable mBarBackground;
+ 
+     private int mMode;
