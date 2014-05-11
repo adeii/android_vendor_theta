@@ -1,0 +1,16 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0006): disable message in Accessibility Settings
+
+diff --git a/src/com/android/settings/accessibility/AccessibilitySettings.java b/src/com/android/settings/accessibility/AccessibilitySettings.java
+index 6cfb35a..b3d292e 100644
+--- a/src/com/android/settings/accessibility/AccessibilitySettings.java
++++ b/src/com/android/settings/accessibility/AccessibilitySettings.java
+@@ -217,7 +217,7 @@ public class AccessibilitySettings extends SettingsPreferenceFragment implements
+         loadInstalledServices();
+         updateAllPreferences();
+ 
+-        offerInstallAccessibilitySerivceOnce();
++        //offerInstallAccessibilitySerivceOnce();
+ 
+         mSettingsPackageMonitor.register(getActivity(), getActivity().getMainLooper(), false);
+         mSettingsContentObserver.register(getContentResolver());
