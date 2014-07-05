@@ -1,0 +1,45 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: build (0002): fix progress bar in recovery 
+
+diff --git a/tools/releasetools/ota_from_target_files b/tools/releasetools/ota_from_target_files
+index 7ef77a8..15cb810 100755
+--- a/tools/releasetools/ota_from_target_files
++++ b/tools/releasetools/ota_from_target_files
+@@ -505,6 +505,8 @@ reboot_now("%(bcb_dev)s", "recovery");
+ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
+ """ % bcb_dev)
+ 
++  script.ShowProgress(0.5, 20)
++
+   device_specific.FullOTA_InstallBegin()
+ 
+   if OPTIONS.backuptool:
+@@ -512,8 +514,6 @@ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
+     script.RunBackup("backup")
+     script.Unmount("/system")
+ 
+-  script.ShowProgress(0.5, 0)
+-
+   if OPTIONS.wipe_user_data:
+     script.FormatPartition("/data")
+ 
+@@ -541,16 +541,15 @@ else if get_stage("%(bcb_dev)s", "stage") == "3/3" then
+ 
+   common.CheckSize(boot_img.data, "boot.img", OPTIONS.info_dict)
+   common.ZipWriteStr(output_zip, "boot.img", boot_img.data)
+-  script.ShowProgress(0.2, 0)
+ 
+   if OPTIONS.backuptool:
+-    script.ShowProgress(0.2, 10)
++    script.ShowProgress(0.3, 10)
+     script.RunBackup("restore")
+ 
+-  script.ShowProgress(0.2, 10)
++  script.ShowProgress(0.2, 5)
+   script.WriteRawImage("/boot", "boot.img")
+ 
+-  script.ShowProgress(0.1, 0)
++  script.ShowProgress(0.1, 5)
+   device_specific.FullOTA_InstallEnd()
+ 
+   if OPTIONS.extra_script is not None:

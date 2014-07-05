@@ -1,0 +1,73 @@
+From: Konsta <konsta09@gmail.com>
+Subject: packages/Settings (0010): add option to disable bootanimation
+
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index 9c36678..b266037 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -608,6 +608,10 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+     <string name="pref_force_highend_gfx_title">Force high-end graphics</string>
+     <string name="pref_force_highend_gfx_summary">Enables high-end visual effects such as transparent status/navigation bar (requires reboot)</string>
+ 
++    <!-- Performance : Disable bootanimation -->
++    <string name="pref_disable_bootanimation_title">Disable boot animation</string>
++    <string name="pref_disable_bootanimation_summary">Don\'t show boot animation to speed up boot time</string>
++
+     <!-- Kill app long press back -->
+     <string name="kill_app_longpress_back">Kill app back button</string>
+     <string name="kill_app_longpress_back_summary">Kill the foreground app by long pressing the back button</string>
+diff --git a/res/xml/performance_settings.xml b/res/xml/performance_settings.xml
+index c6064e1..5e4537e 100644
+--- a/res/xml/performance_settings.xml
++++ b/res/xml/performance_settings.xml
+@@ -71,4 +71,9 @@
+             android:summary="@string/pref_force_highend_gfx_summary" />
+     </PreferenceCategory>
+ 
++    <CheckBoxPreference
++        android:key="pref_disable_bootanimation"
++        android:title="@string/pref_disable_bootanimation_title"
++        android:summary="@string/pref_disable_bootanimation_summary" />
++
+ </PreferenceScreen>
+diff --git a/src/com/android/settings/cyanogenmod/PerformanceSettings.java b/src/com/android/settings/cyanogenmod/PerformanceSettings.java
+index 3b517db..768ec64 100644
+--- a/src/com/android/settings/cyanogenmod/PerformanceSettings.java
++++ b/src/com/android/settings/cyanogenmod/PerformanceSettings.java
+@@ -57,11 +57,15 @@ public class PerformanceSettings extends SettingsPreferenceFragment implements
+     private static final String FORCE_HIGHEND_GFX_PREF = "pref_force_highend_gfx";
+     private static final String FORCE_HIGHEND_GFX_PERSIST_PROP = "persist.sys.force_highendgfx";
+ 
++    private static final String DISABLE_BOOTANIMATION_PREF = "pref_disable_bootanimation";
++    private static final String DISABLE_BOOTANIMATION_PERSIST_PROP = "persist.sys.nobootanimation";
++
+     private static final String SHOW_ALERT_DIALOG_PROP = "ro.performance.show_alert_dialog";
+ 
+     private ListPreference mPerfProfilePref;
+     private CheckBoxPreference mUse16bppAlphaPref;
+     private CheckBoxPreference mForceHighEndGfx;
++    private CheckBoxPreference mDisableBootanimPref;
+ 
+     private String[] mPerfProfileEntries;
+     private String[] mPerfProfileValues;
+@@ -129,6 +133,10 @@ public class PerformanceSettings extends SettingsPreferenceFragment implements
+             category.removePreference(findPreference(FORCE_HIGHEND_GFX_PREF));
+         }
+ 
++        mDisableBootanimPref = (CheckBoxPreference) prefSet.findPreference(DISABLE_BOOTANIMATION_PREF);
++        String disableBootanimation = SystemProperties.get(DISABLE_BOOTANIMATION_PERSIST_PROP, "0");
++        mDisableBootanimPref.setChecked("1".equals(disableBootanimation));
++
+         /* Display the warning dialog */
+ 	boolean showAlertDialog = Settings.System.getInt(getContentResolver(), SHOW_ALERT_DIALOG_PROP, 1) == 1;
+ 	if (showAlertDialog){
+@@ -177,6 +185,9 @@ public class PerformanceSettings extends SettingsPreferenceFragment implements
+         } else if (preference == mForceHighEndGfx) {
+             SystemProperties.set(FORCE_HIGHEND_GFX_PERSIST_PROP,
+                     mForceHighEndGfx.isChecked() ? "true" : "false");
++        } else if (preference == mDisableBootanimPref) {
++            SystemProperties.set(DISABLE_BOOTANIMATION_PERSIST_PROP,
++                    mDisableBootanimPref.isChecked() ? "1" : "0");
+         } else {
+             // If we didn't handle it, let preferences handle it.
+             return super.onPreferenceTreeClick(preferenceScreen, preference);

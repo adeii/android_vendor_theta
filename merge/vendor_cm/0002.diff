@@ -1,0 +1,48 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: vendor/cm (0002): add OTA
+
+diff --git a/config/common.mk b/config/common.mk
+index c6b5fc2..34b6636 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -138,10 +138,9 @@ PRODUCT_PACKAGES += \
+     Apollo \
+     CMFileManager \
+     LockClock \
+-    CMUpdater \
+-    CMFota \
+     CMAccount \
+-    CMHome
++    CMHome \
++    OTAUpdateCenter
+ 
+ # CM Hardware Abstraction Framework
+ PRODUCT_PACKAGES += \
+@@ -324,6 +323,15 @@ PRODUCT_PROPERTY_OVERRIDES += persist.sys.recovery_update=false
+ PRODUCT_PROPERTY_OVERRIDES += \
+   ro.cm.display.version=$(CM_DISPLAY_VERSION)
+ 
++# OTA
++OTA_PRODUCT_NAME := cm
++OTA_DATE_TIME := $(shell date -u +%Y%m%d-%H%M)
++
++PRODUCT_PROPERTY_OVERRIDES += \
++      otaupdater.otaid=$(OTA_DEVELOPER_ID)-$(OTA_PRODUCT_NAME)$(PRODUCT_VERSION_MAJOR)-$(CM_BUILD) \
++      otaupdater.otaver=$(OTA_PRODUCT_NAME)-$(CM_VERSION) \
++      otaupdater.otatime=$(OTA_DATE_TIME)
++
+ -include $(WORKSPACE)/build_env/image-auto-bits.mk
+ 
+ -include vendor/cyngn/product.mk
+diff --git a/config/common.mk b/config/common.mk
+index 45c019c..c95e132 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -137,7 +137,6 @@ PRODUCT_PACKAGES += \
+     DSPManager \
+     libcyanogen-dsp \
+     audio_effects.conf \
+-    CMWallpapers \
+     Apollo \
+     CMFileManager \
+     LockClock \

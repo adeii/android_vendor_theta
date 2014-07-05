@@ -1,0 +1,16 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0007): disable anonymous stats
+
+diff --git a/res/xml/anonymous_stats.xml b/res/xml/anonymous_stats.xml
+index 6c4621e..4120286 100644
+--- a/res/xml/anonymous_stats.xml
++++ b/res/xml/anonymous_stats.xml
+@@ -21,7 +21,7 @@
+ 
+     <CheckBoxPreference
+         android:key="pref_anonymous_opt_in"
+-        android:defaultValue="true"
++        android:defaultValue="false"
+         android:title="@string/enable_reporting_title" />
+ 
+     <PreferenceScreen

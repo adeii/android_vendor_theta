@@ -1,0 +1,27 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0013): russian translation for navbar settings
+
+diff --git a/res/values-ru/cm_strings.xml b/res/values-ru/cm_strings.xml
+index 4200f50..daf148a 100644
+--- a/res/values-ru/cm_strings.xml
++++ b/res/values-ru/cm_strings.xml
+@@ -411,6 +411,8 @@
+   <string name="pref_use_16bpp_alpha_summary">Увеличенная производительность графической системы, но возможно снижение качества и появление визуальных артефактов (требуется перезагрузка)</string>
+   <string name="pref_force_highend_gfx_title">Высококачественная графика</string>
+   <string name="pref_force_highend_gfx_summary">Использовать эффекты, отключённые для устройств с низкой производительностью, например, прозрачность строки состояния и панели навигации (требуется перезагрузка)</string>
++  <string name="pref_disable_bootanimation_title">Отключить загрузочную анимацию</string>
++  <string name="pref_disable_bootanimation_summary">Не показывать загрузочную анимацию, чтобы повысить скорость загрузки.</string>
+   <string name="kill_app_longpress_back">Закрытие приложения</string>
+   <string name="kill_app_longpress_back_summary">Завершать работу текущего приложения удерживанием кнопки «Назад»</string>
+   <string name="changelog_title">Список изменений</string>
+@@ -596,6 +598,10 @@
+   <string name="navring_action_torch">Фонарик</string>
+   <string name="navring_action_google_now">Google Now</string>
+   <string name="navring_choose_action_title">Выбор действия</string>
++  <string name="show_navbar_title">Отображать строку навигации</string>
++  <string name="show_navbar_summary">Требуется перезагрузка</string>
++  <string name="navigation_bar_height">Высота кнопок</string>
++  <string name="navigation_bar_height_48">48dp (по умолчанию)</string>
+   <string name="power_menu_title">Меню при долгом нажатии</string>
+   <string name="power_menu_reboot_title">Перезагрузка</string>
+   <string name="power_menu_screenshot_title">Скриншот</string>

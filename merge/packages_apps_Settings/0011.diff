@@ -1,0 +1,125 @@
+From: Konsta <konsta09@gmail.com>
+Subject: packages/Settings (0011): add option to show navigation bar
+
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index ca50639..2d5281d 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -864,6 +864,10 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+     <string name="navigation_bar_arrow_keys_title">Arrow keys while typing</string>
+     <string name="navigation_bar_arrow_keys_summary">Display left and right cursor buttons while typing</string>
+ 
++    <!-- Navbar -->
++    <string name="show_navbar_title">Show navigation bar</string>
++    <string name="show_navbar_summary">Requires a reboot</string>
++
+     <!-- Navigation ring shortcuts -->
+     <string name="navigation_ring_title">Quick launch shortcuts</string>
+     <string name="navring_target_reset_message">Delete all user created navigation bar shortcuts and restore to default?</string>
+diff --git a/res/xml/button_settings.xml b/res/xml/button_settings.xml
+index 18a07c2..48071fc 100644
+--- a/res/xml/button_settings.xml
++++ b/res/xml/button_settings.xml
+@@ -17,43 +17,23 @@
+ <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+         xmlns:settings="http://schemas.android.com/apk/res/com.android.settings">
+ 
+-    <CheckBoxPreference
+-        android:key="disable_nav_keys"
+-        android:title="@string/disable_navkeys_title"
+-        android:summary="@string/disable_navkeys_summary"
+-        android:defaultValue="false" />
+-
+     <com.android.settings.cyanogenmod.ButtonBacklightBrightness
+         android:key="button_backlight"
+         android:title="@string/button_backlight_title"
+         android:dialogTitle="@string/button_backlight_title"
+         android:persistent="false" />
+ 
+-    <!-- Device Specific Bluetooth Input settings -->
+-    <Preference
+-        android:key="bluetooth_input_settings">
+-        <intent
+-            android:action="com.cyanogenmod.action.LAUNCH_BLUETOOTH_INPUT_SETTINGS"
+-            android:targetPackage="com.cyanogenmod.settings.device"
+-            android:targetClass="com.cyanogenmod.settings.device.BluetoothInputSettings" />
+-    </Preference>
+-
+-    <PreferenceCategory
+-        android:key="power_key"
+-        android:title="@string/hardware_keys_power_key_title" >
+-
+-        <PreferenceScreen
+-            android:key="power_menu"
+-            android:title="@string/power_menu_title"
+-            android:fragment="com.android.settings.cyanogenmod.PowerMenu" />
+-
+-        <CheckBoxPreference
+-            android:key="power_end_call"
+-            android:title="@string/power_end_call_title"
+-            android:summary="@string/power_end_call_summary"
+-            android:persistent="false"/>
++    <CheckBoxPreference
++        android:key="disable_nav_keys"
++        android:title="@string/disable_navkeys_title"
++        android:summary="@string/disable_navkeys_summary"
++        android:defaultValue="false" />
+ 
+-    </PreferenceCategory>
++    <com.android.settings.cyanogenmod.SystemSettingCheckBoxPreference
++        android:key="show_navbar"
++        android:title="@string/show_navbar_title"
++        android:summary="@string/show_navbar_summary"
++        android:defaultValue="false" />
+ 
+     <PreferenceCategory
+             android:key="navigation_bar"
+@@ -82,6 +62,32 @@
+                 android:defaultValue="true" />
+     </PreferenceCategory>
+ 
++    <!-- Device Specific Bluetooth Input settings -->
++    <Preference
++        android:key="bluetooth_input_settings">
++        <intent
++            android:action="com.cyanogenmod.action.LAUNCH_BLUETOOTH_INPUT_SETTINGS"
++            android:targetPackage="com.cyanogenmod.settings.device"
++            android:targetClass="com.cyanogenmod.settings.device.BluetoothInputSettings" />
++    </Preference>
++
++    <PreferenceCategory
++        android:key="power_key"
++        android:title="@string/hardware_keys_power_key_title" >
++
++        <PreferenceScreen
++            android:key="power_menu"
++            android:title="@string/power_menu_title"
++            android:fragment="com.android.settings.cyanogenmod.PowerMenu" />
++
++        <CheckBoxPreference
++            android:key="power_end_call"
++            android:title="@string/power_end_call_title"
++            android:summary="@string/power_end_call_summary"
++            android:persistent="false"/>
++
++    </PreferenceCategory>
++
+     <PreferenceCategory
+         android:key="home_key"
+         android:title="@string/hardware_keys_home_key_title" >
+diff --git a/src/com/android/settings/cyanogenmod/ButtonSettings.java b/src/com/android/settings/cyanogenmod/ButtonSettings.java
+index 8acfc39..d176984 100644
+--- a/src/com/android/settings/cyanogenmod/ButtonSettings.java
++++ b/src/com/android/settings/cyanogenmod/ButtonSettings.java
+@@ -313,6 +313,11 @@ public class ButtonSettings extends SettingsPreferenceFragment implements
+             prefScreen.removePreference(volumeCategory);
+         }
+ 
++        // Hide option to show navbar on devices that have persistent navbar
++        if (getResources().getBoolean(com.android.internal.R.bool.config_showNavigationBar)) {
++            prefScreen.removePreference(findPreference(Settings.System.SHOW_NAVBAR));
++        }
++
+         try {
+             // Only show the navigation bar category on devices that has a navigation bar
+             // unless we are forcing it via development settings

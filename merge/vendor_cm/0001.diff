@@ -2,7 +2,7 @@ From: ChepKun <ProgrammerKun@gmail.com>
 Subject: vendor/cm (0001): exclude some packages
 
 diff --git a/config/common_full.mk b/config/common_full.mk
-index dc2e40d..9b00d2c 100644
+index 3d88812..38034b5 100644
 --- a/config/common_full.mk
 +++ b/config/common_full.mk
 @@ -9,14 +9,7 @@ PRODUCT_PACKAGE_OVERLAYS += vendor/cm/overlay/dictionaries
@@ -18,7 +18,8 @@ index dc2e40d..9b00d2c 100644
 -    PhaseBeam \
 -    VisualizationWallpapers \
      PhotoTable \
-     SoundRecorder
+     SoundRecorder \
+     PhotoPhase
  
 diff --git a/config/telephony.mk b/config/telephony.mk
 index 1c0c4a6..097693f 100644

@@ -1,0 +1,465 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0017): add swap settings
+
+diff --git a/res/layout/preference_dialog_swappiness.xml b/res/layout/preference_dialog_swappiness.xml
+new file mode 100644
+index 0000000..8b6e0eb
+--- /dev/null
++++ b/res/layout/preference_dialog_swappiness.xml
+@@ -0,0 +1,46 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2008 The Android Open Source Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
++        xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++        android:layout_width="match_parent"
++        android:layout_height="match_parent"
++        android:padding="12dp">
++
++        <!-- Static height enough to accommodate the text views in their biggest possible size,
++        without having the dialog resize itself at any point. -->
++        <LinearLayout android:id="@+id/container"
++                 android:orientation="vertical"
++                 android:layout_width="match_parent"
++                 android:layout_height="64dp"
++                 android:gravity="center_horizontal|center_vertical">
++
++                <TextView android:id="@+id/swappiness"
++                        android:layout_width="wrap_content"
++                        android:layout_height="wrap_content"
++                        android:textAppearance="?android:textAppearanceLarge" />
++
++        </LinearLayout>
++
++        <com.android.settings.IntervalSeekBar android:id="@+id/swappiness_seekbar"
++                android:layout_width="match_parent"
++                android:layout_height="wrap_content"
++                android:padding="8dp"
++                android:layout_below="@+id/container"
++		 settings:min="5"
++                settings:max="60" />
++
++</RelativeLayout>
+diff --git a/res/values-ru/cm_arrays.xml b/res/values-ru/cm_arrays.xml
+index b501e80..e57e480 100644
+--- a/res/values-ru/cm_arrays.xml
++++ b/res/values-ru/cm_arrays.xml
+@@ -61,4 +61,12 @@
+     <item>Запретить</item>
+     <item>Спрашивать</item>
+   </string-array>
++  <string-array name="swap_size_entries">
++    <item>32 МБ</item>
++    <item>48 МБ</item>
++    <item>64 МБ</item>
++    <item>96 МБ</item>
++    <item>128 МБ</item>
++    <item>256 МБ</item>
++  </string-array>
+ </resources>
+diff --git a/res/values-ru/cm_strings.xml b/res/values-ru/cm_strings.xml
+index daf148a..bd655a4 100644
+--- a/res/values-ru/cm_strings.xml
++++ b/res/values-ru/cm_strings.xml
+@@ -879,4 +879,11 @@
+   <string name="menu_hidden_apps_reset_lock">Удалить граф. ключ</string>
+   <string name="protected_apps">Заблокир. приложения</string>
+   <string name="saving_protected_components">Сохранение состояния приложений\u2026</string>
++  <string name="swap_settings_title">Своп (Требуется перезагрузка)</string>
++  <string name="swap_type_title">Тип свопа</string>
++  <string name="swap_size_title">Размер свопа</string>
++  <string name="title_swappiness_size">Лимит свободной ОЗУ</string>
++  <string name="swap_type_none">Не использовать</string>
++  <string name="swap_type_zram">zRam</string>
++  <string name="swap_type_pagefile">Файл подкачки</string>
+ </resources>
+diff --git a/res/values/cm_arrays.xml b/res/values/cm_arrays.xml
+index 9a9b1fc..66648e5 100644
+--- a/res/values/cm_arrays.xml
++++ b/res/values/cm_arrays.xml
+@@ -769,4 +769,35 @@
+         <item>28</item>
+         <item>24</item>
+     </string-array>
++
++    <!--- Swap -->
++    <string-array name="swap_type_entries" translatable="false">
++        <item>@string/swap_type_none</item>
++        <item>@string/swap_type_zram</item>
++        <item>@string/swap_type_pagefile</item>
++    </string-array>
++
++    <string-array name="swap_type_values" translatable="false">
++        <item>0</item>
++        <item>1</item>
++        <item>2</item>
++    </string-array>
++
++    <string-array name="swap_size_entries" translatable="true">
++        <item>32 MB</item>
++        <item>48 MB</item>
++        <item>64 MB</item>
++        <item>96 MB</item>
++        <item>128 MB</item>
++        <item>256 MB</item>
++    </string-array>
++
++    <string-array name="swap_size_values" translatable="false">
++        <item>33554432</item>
++        <item>50331648</item>
++        <item>67108864</item>
++        <item>100663296</item>
++        <item>134217728</item>
++        <item>268435456</item>
++    </string-array>
+ </resources>
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index 9e67a45..9f24251 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -1287,4 +1287,13 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+     <string name="enable_adb_cm">Android debugging</string>
+     <!-- Setting checkbox summary for Whether to enable Android debugging support on the phone -->
+     <string name="enable_adb_summary_cm">Enable the Android Debug Bridge (adb) interface</string>
++
++    <!-- Swap settings -->
++    <string name="swap_settings_title">Swap (Requires a reboot)</string>
++    <string name="swap_type_title">Swap type</string>
++    <string name="swap_size_title">Swap size</string>
++    <string name="title_swappiness_size">Swappiness</string>
++    <string name="swap_type_none">None</string>
++    <string name="swap_type_zram">zRam</string>
++    <string name="swap_type_pagefile">Pagefile</string>
+ </resources>
+diff --git a/res/xml/memory_management.xml b/res/xml/memory_management.xml
+index f86f2c0..87c18b2 100644
+--- a/res/xml/memory_management.xml
++++ b/res/xml/memory_management.xml
+@@ -29,4 +29,25 @@
+         android:title="@string/pref_ksm_title"
+         android:summary="@string/pref_ksm_summary" />
+ 
++    <PreferenceCategory android:key="swap_settings"
++        android:title="@string/swap_settings_title">
++
++        <ListPreference
++            android:key="pref_swap_type"
++            android:title="@string/swap_type_title"
++            android:entries="@array/swap_type_entries"
++            android:entryValues="@array/swap_type_values" />
++
++        <ListPreference
++            android:key="pref_swap_size"
++            android:title="@string/swap_size_title"
++            android:entries="@array/swap_size_entries"
++            android:entryValues="@array/swap_size_values" />
++
++        <com.android.settings.cyanogenmod.SwappinessSizeDialog
++            android:key="pref_swappiness_size"
++            android:title="@string/title_swappiness_size"
++            android:dialogTitle="@string/title_swappiness_size" />
++
++    </PreferenceCategory>
+ </PreferenceScreen>
+diff --git a/src/com/android/settings/cyanogenmod/MemoryManagement.java b/src/com/android/settings/cyanogenmod/MemoryManagement.java
+index f70b570..3472a6c 100644
+--- a/src/com/android/settings/cyanogenmod/MemoryManagement.java
++++ b/src/com/android/settings/cyanogenmod/MemoryManagement.java
+@@ -21,14 +21,21 @@ import java.io.File;
+ import android.os.Bundle;
+ import android.os.SystemProperties;
+ import android.preference.CheckBoxPreference;
++import android.content.DialogInterface;
++import android.content.DialogInterface.OnClickListener;
++import android.preference.ListPreference;
+ import android.preference.Preference;
++import android.preference.Preference.OnPreferenceChangeListener;
++import android.preference.Preference.OnPreferenceClickListener;
++import android.preference.PreferenceCategory;
+ import android.preference.PreferenceScreen;
+ 
+ import com.android.settings.R;
+ import com.android.settings.SettingsPreferenceFragment;
+ import com.android.settings.Utils;
+ 
+-public class MemoryManagement extends SettingsPreferenceFragment {
++public class MemoryManagement extends SettingsPreferenceFragment  implements
++                OnPreferenceChangeListener, OnPreferenceClickListener{
+ 
+     public static final String KSM_RUN_FILE = "/sys/kernel/mm/ksm/run";
+     public static final String KSM_PREF = "pref_ksm";
+@@ -36,9 +43,20 @@ public class MemoryManagement extends SettingsPreferenceFragment {
+     private static final String PURGEABLE_ASSETS_PREF = "pref_purgeable_assets";
+     private static final String PURGEABLE_ASSETS_PERSIST_PROP = "persist.sys.purgeable_assets";
+ 
++    private static final String CATEGORY_SWAP = "swap_settings";
++    private static final String SWAP_TYPE_PREF = "pref_swap_type";
++    private static final String SWAP_TYPE_PERSIST_PROP = "persist.sys.swap_type";
++    private static final String SWAP_SIZE_PREF = "pref_swap_size";
++    private static final String SWAP_SIZE_PERSIST_PROP = "persist.sys.swap_size";
++
++    public static final String SWAPPINESS_SIZE_PROP = "persist.sys.swappiness";
++    private static final String SWAPPINESS_SIZE_PREF = "pref_swappiness_size";
++
+     private CheckBoxPreference mPurgeableAssetsPref;
+     private CheckBoxPreference mKSMPref;
+-
++    private ListPreference mSwapTypePreference;
++    private ListPreference mSwapSizePreference;
++    private SwappinessSizeDialog mSwappinessSizePref;
+ 
+     @Override
+     public void onCreate(Bundle savedInstanceState) {
+@@ -59,6 +77,62 @@ public class MemoryManagement extends SettingsPreferenceFragment {
+ 
+         String purgeableAssets = SystemProperties.get(PURGEABLE_ASSETS_PERSIST_PROP, "0");
+         mPurgeableAssetsPref.setChecked("1".equals(purgeableAssets));
++
++	// Swap settings
++        PreferenceCategory category = (PreferenceCategory) prefSet.findPreference(CATEGORY_SWAP);
++
++        mSwapTypePreference = (ListPreference) findPreference(SWAP_TYPE_PREF);
++        String swapType = SystemProperties.get(SWAP_TYPE_PERSIST_PROP, "1");
++        mSwapTypePreference.setValue(String.valueOf(swapType));
++        updateSwapTypePreferenceDescription(Integer.parseInt(swapType));
++        mSwapTypePreference.setOnPreferenceChangeListener(this);
++
++        mSwapSizePreference = (ListPreference) findPreference(SWAP_SIZE_PREF);
++        String swapSize = SystemProperties.get(SWAP_SIZE_PERSIST_PROP, "50331648");
++        mSwapSizePreference.setValue(String.valueOf(swapSize));
++        updateSwapSizePreferenceDescription(swapSize);
++        mSwapSizePreference.setOnPreferenceChangeListener(this);
++
++        int swappinessValue = Integer.parseInt(SystemProperties.get(SWAPPINESS_SIZE_PROP, "20"));
++
++        mSwappinessSizePref = (SwappinessSizeDialog) findPreference(SWAPPINESS_SIZE_PREF);
++	mSwappinessSizePref.setSwappiness(swappinessValue);
++        mSwappinessSizePref.setOnPreferenceChangeListener(this);
++        mSwappinessSizePref.setOnPreferenceClickListener(this);
++    }
++
++    private void updateSwapTypePreferenceDescription(int swapType) {
++        ListPreference preference = mSwapTypePreference;
++        String summary;
++        final CharSequence[] entries = preference.getEntries();
++        final CharSequence[] values = preference.getEntryValues();
++        if (entries == null || entries.length == 0) {
++            summary = "";
++        } else {
++            summary = entries[swapType].toString();
++        }
++        preference.setSummary(summary);
++    }
++
++    private void updateSwapSizePreferenceDescription(String swapSize) {
++        ListPreference preference = mSwapSizePreference;
++        String summary;
++        final CharSequence[] entries = preference.getEntries();
++        final CharSequence[] values = preference.getEntryValues();
++
++	int sizeIndex = 1;
++	for (int i = 0; i < values.length; i++) {
++	    if (values[i].toString().equals(swapSize)) {
++		sizeIndex = i;
++	    }
++	}
++
++        if (entries == null || entries.length == 0) {
++            summary = "";
++        } else {
++            summary = entries[sizeIndex].toString();
++        }
++        preference.setSummary(summary);
+     }
+ 
+     @Override
+@@ -74,4 +148,31 @@ public class MemoryManagement extends SettingsPreferenceFragment {
+         }
+         return false;
+     }
++
++    @Override
++    public boolean onPreferenceChange(Preference preference, Object objValue) {
++            if (preference == mSwapTypePreference) {
++		SystemProperties.set(SWAP_TYPE_PERSIST_PROP,(String) objValue);
++		updateSwapTypePreferenceDescription(Integer.parseInt((String) objValue));
++                return true;
++            } else if (preference == mSwapSizePreference) {
++		SystemProperties.set(SWAP_SIZE_PERSIST_PROP,(String) objValue);
++		updateSwapSizePreferenceDescription((String) objValue);
++                return true;
++            } else if (preference == mSwappinessSizePref) {
++		mSwappinessSizePref.setSwappiness((Integer) objValue);
++		SystemProperties.set(SWAPPINESS_SIZE_PROP, objValue.toString());
++                return true;
++            }
++
++        return true;
++    }
++
++    @Override
++    public boolean onPreferenceClick(Preference preference) {
++        if (preference == mSwappinessSizePref) {
++            mSwappinessSizePref.click();
++        }
++        return false;
++    }
+ }
+diff --git a/src/com/android/settings/cyanogenmod/SwappinessSizeDialog.java b/src/com/android/settings/cyanogenmod/SwappinessSizeDialog.java
+new file mode 100644
+index 0000000..3c1e35d
+--- /dev/null
++++ b/src/com/android/settings/cyanogenmod/SwappinessSizeDialog.java
+@@ -0,0 +1,113 @@
++/*
++ * Copyright (C) 2014 The CyanogenMod Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.settings.cyanogenmod;
++
++import android.app.ActivityManagerNative;
++import android.content.Context;
++import android.content.res.Configuration;
++import android.content.res.Resources;
++import android.content.res.TypedArray;
++import android.os.RemoteException;
++import android.preference.DialogPreference;
++import android.preference.Preference;
++import android.provider.Settings;
++import android.util.AttributeSet;
++import android.util.DisplayMetrics;
++import android.util.Log;
++import android.util.TypedValue;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.widget.SeekBar;
++import android.widget.TextView;
++
++import com.android.settings.R;
++import com.android.settings.IntervalSeekBar;
++import com.android.settings.Utils;
++
++public class SwappinessSizeDialog extends DialogPreference
++    implements SeekBar.OnSeekBarChangeListener {
++
++    private TextView mSwappinessText;
++    private IntervalSeekBar mSeekBar;
++
++    private int mSwappiness = 20;
++
++    public SwappinessSizeDialog(Context context, AttributeSet attrs) {
++        super(context, attrs);
++
++        setPositiveButtonText(android.R.string.ok);
++        setNegativeButtonText(android.R.string.cancel);
++
++        setDialogLayoutResource(R.layout.preference_dialog_swappiness);
++    }
++
++    @Override
++    protected View onCreateDialogView() {
++        LayoutInflater inflater =
++                (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
++        View view = inflater.inflate(R.layout.preference_dialog_swappiness, null);
++
++        mSwappinessText = (TextView) view.findViewById(R.id.swappiness);
++	setPrompt(mSwappiness);
++
++        mSeekBar = (IntervalSeekBar) view.findViewById(R.id.swappiness_seekbar);
++        mSeekBar.setProgress(mSwappiness);
++        mSeekBar.setOnSeekBarChangeListener(this);
++
++        return view;
++    }
++
++    public void setSwappiness(int swappiness) {
++        mSwappiness = swappiness;
++        setSummary(String.valueOf(swappiness) + "%");
++    }
++
++    @Override
++    protected void onDialogClosed(boolean positiveResult) {
++        if (positiveResult) {
++            callChangeListener(Math.round(mSeekBar.getProgressFloat()));
++        }
++    }
++
++    @Override
++    protected void onClick() {
++        // Ignore this until an explicit call to click()
++    }
++
++    public void click() {
++        super.onClick();
++    }
++
++    private void setPrompt(int swappiness) {
++        // Update text
++        mSwappinessText.setText(String.valueOf(swappiness) + "%");
++    }
++
++    @Override
++    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
++        setPrompt(Math.round(mSeekBar.getProgressFloat()));
++    }
++
++    // Not used
++    @Override
++    public void onStartTrackingTouch(SeekBar seekBar) {
++    }
++
++    @Override
++    public void onStopTrackingTouch(SeekBar seekBar) {
++    }
++}
+diff --git a/src/com/android/settings/cyanogenmod/MemoryManagement.java b/src/com/android/settings/cyanogenmod/MemoryManagement.java
+index 7d6addd..ef70419 100644
+--- a/src/com/android/settings/cyanogenmod/MemoryManagement.java
++++ b/src/com/android/settings/cyanogenmod/MemoryManagement.java
+@@ -99,6 +99,13 @@ public class MemoryManagement extends SettingsPreferenceFragment  implements
+ 	mSwappinessSizePref.setSwappiness(swappinessValue);
+         mSwappinessSizePref.setOnPreferenceChangeListener(this);
+         mSwappinessSizePref.setOnPreferenceClickListener(this);
++
++	updateSwapOptions(Integer.parseInt(swapType));
++    }
++
++    private void updateSwapOptions(int swapType) {
++	mSwapSizePreference.setEnabled(swapType == 0 ? false : true);
++	mSwappinessSizePref.setEnabled(swapType == 0 ? false : true);
+     }
+ 
+     private void updateSwapTypePreferenceDescription(int swapType) {
+@@ -154,6 +161,7 @@ public class MemoryManagement extends SettingsPreferenceFragment  implements
+             if (preference == mSwapTypePreference) {
+ 		SystemProperties.set(SWAP_TYPE_PERSIST_PROP,(String) objValue);
+ 		updateSwapTypePreferenceDescription(Integer.parseInt((String) objValue));
++		updateSwapOptions(Integer.parseInt((String) objValue));
+                 return true;
+             } else if (preference == mSwapSizePreference) {
+ 		SystemProperties.set(SWAP_SIZE_PERSIST_PROP,(String) objValue);

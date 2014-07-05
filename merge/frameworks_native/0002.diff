@@ -1,0 +1,18 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/native (0002): new values for phone-hdpi-512-dalvik-heap 
+
+diff --git a/build/phone-hdpi-512-dalvik-heap.mk b/build/phone-hdpi-512-dalvik-heap.mk
+index 6b97545..97dcad4 100644
+--- a/build/phone-hdpi-512-dalvik-heap.mk
++++ b/build/phone-hdpi-512-dalvik-heap.mk
+@@ -19,8 +19,8 @@
+ 
+ PRODUCT_PROPERTY_OVERRIDES += \
+     dalvik.vm.heapstartsize=5m \
+-    dalvik.vm.heapgrowthlimit=48m \
+-    dalvik.vm.heapsize=128m \
++    dalvik.vm.heapgrowthlimit=32m \
++    dalvik.vm.heapsize=96m \
+     dalvik.vm.heaptargetutilization=0.25 \
+     dalvik.vm.heapminfree=512k \
+     dalvik.vm.heapmaxfree=2m

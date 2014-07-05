@@ -1,0 +1,28 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Trebuchet (0001): fix icons on hdpi phones
+
+diff --git a/res/values/config.xml b/res/values/config.xml
+index 003de5a..806fa23 100644
+--- a/res/values/config.xml
++++ b/res/values/config.xml
+@@ -1,6 +1,6 @@
+ <resources>
+ <!-- Dynamic Grid -->
+-    <integer name="config_dynamic_grid_max_long_edge_cell_count">6</integer>
++    <integer name="config_dynamic_grid_max_long_edge_cell_count">5</integer>
+     <integer name="config_dynamic_grid_max_short_edge_cell_count">5</integer>
+     <integer name="config_dynamic_grid_min_edge_cell_count">3</integer>
+     <!-- Out of 100, the percent of space the overview bar should try and take vertically. -->
+diff --git a/src/com/android/launcher3/DynamicGrid.java b/src/com/android/launcher3/DynamicGrid.java
+index 9be377e..36c3214 100644
+--- a/src/com/android/launcher3/DynamicGrid.java
++++ b/src/com/android/launcher3/DynamicGrid.java
+@@ -75,7 +75,7 @@ public class DynamicGrid {
+         deviceProfiles.add(new DeviceProfile("Nexus 4",
+                 359, 518,  4, 4,  (useLargeIcons ? DEFAULT_ICON_SIZE_DP : 52), 13, (hasAA ? 5 : 5), (useLargeIcons ? 56 : 48)));
+         deviceProfiles.add(new DeviceProfile("Large Phone",
+-                335, 567,  4, 4, (useLargeIcons ? DEFAULT_ICON_SIZE_DP : 56), 13, (hasAA ? 5 : 5), 56));
++                335, 567,  4, 4, (useLargeIcons ? 54 : 48), 13, (hasAA ? 5 : 5), (useLargeIcons ? 54 : 48)));
+         deviceProfiles.add(new DeviceProfile("Large Phone",
+                 406, 694,  5, 5,  (useLargeIcons ? 64 : 56), 14.4f,  5, 56));
+         // The tablet profile is odd in that the landscape orientation

@@ -1,0 +1,17 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: vendor/cm (0003): copy theta prebuilt
+
+diff --git a/config/common.mk b/config/common.mk
+index b85a84b..da8d37a 100644
+--- a/config/common.mk
++++ b/config/common.mk
+@@ -110,6 +110,9 @@ PRODUCT_COPY_FILES += \
+ # T-Mobile theme engine
+ include vendor/cm/config/themes_common.mk
+ 
++# Theta stuff
++include vendor/theta/config/common_full.mk
++
+ # Required CM packages
+ PRODUCT_PACKAGES += \
+     Development \
