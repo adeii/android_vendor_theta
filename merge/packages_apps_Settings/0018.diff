@@ -1,0 +1,62 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0018): show runtime select option, if libart.so exists
+
+diff --git a/src/com/android/settings/DevelopmentSettings.java b/src/com/android/settings/DevelopmentSettings.java
+index afd248a..6d9fb06 100644
+--- a/src/com/android/settings/DevelopmentSettings.java
++++ b/src/com/android/settings/DevelopmentSettings.java
+@@ -177,6 +177,8 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+ 
+     private static final int RESULT_DEBUG_APP = 1000;
+ 
++    private static final String ART_LIB_PATH = "/system/lib/libart.so";
++
+     private IWindowManager mWindowManager;
+     private IBackupManager mBackupManager;
+     private DevicePolicyManager mDpm;
+@@ -375,11 +377,21 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+ 
+         mKillAppLongpressBack = findAndInitCheckboxPref(KILL_APP_LONGPRESS_BACK);
+ 
++        PreferenceGroup debugApplicationsCategory = (PreferenceGroup)
++                    findPreference(DEBUG_APPLICATIONS_CATEGORY_KEY);
++
+         Preference selectRuntime = findPreference(SELECT_RUNTIME_KEY);
+-        if (selectRuntime != null) {
+-            mAllPrefs.add(selectRuntime);
+-            filterRuntimeOptions(selectRuntime);
+-        }
++
++	if (isARTAvailable()) {
++            if (selectRuntime != null) {
++                mAllPrefs.add(selectRuntime);
++                filterRuntimeOptions(selectRuntime);
++            }
++	} else {
++            if (debugApplicationsCategory != null) {
++                debugApplicationsCategory.removePreference(selectRuntime);
++            }
++	}
+ 
+         Preference hdcpChecking = findPreference(HDCP_CHECKING_KEY);
+         if (hdcpChecking != null) {
+@@ -394,8 +406,6 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+                 mAllPrefs.add(selectWebView);
+             }
+         } else {
+-            PreferenceGroup debugApplicationsCategory = (PreferenceGroup)
+-                    findPreference(DEBUG_APPLICATIONS_CATEGORY_KEY);
+             if (debugApplicationsCategory != null) {
+                 debugApplicationsCategory.removePreference(selectWebView);
+             }
+@@ -411,6 +421,10 @@ public class DevelopmentSettings extends RestrictedSettingsFragment
+         mAllPrefs.add(mDevelopmentTools);
+     }
+ 
++    private boolean isARTAvailable() {
++	return Utils.fileExists(ART_LIB_PATH);
++    }
++
+     private ListPreference addListPreference(String prefKey) {
+         ListPreference pref = (ListPreference) findPreference(prefKey);
+         mAllPrefs.add(pref);

@@ -1,0 +1,43 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/base (0020):fix a programmatic smooth scroll bug
+
+diff --git a/core/java/android/widget/AbsListView.java b/core/java/android/widget/AbsListView.java
+index f61bdb8..250fd4e 100644
+--- a/core/java/android/widget/AbsListView.java
++++ b/core/java/android/widget/AbsListView.java
+@@ -4596,7 +4596,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
+                     return;
+                 }
+ 
+-                if (lastPos == mLastSeenPos) {
++                if (lastPos == mLastSeenPos && getChildCount() > 1) {
+                     // No new views, let things keep going.
+                     postOnAnimation(this);
+                     return;
+@@ -4629,7 +4629,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
+                 }
+                 final int nextPos = firstPos + nextViewIndex;
+ 
+-                if (nextPos == mLastSeenPos) {
++                if (nextPos == mLastSeenPos && getChildCount() > 1) {
+                     // No new views, let things keep going.
+                     postOnAnimation(this);
+                     return;
+@@ -4655,7 +4655,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
+             }
+ 
+             case MOVE_UP_POS: {
+-                if (firstPos == mLastSeenPos) {
++                if (firstPos == mLastSeenPos && getChildCount() > 1) {
+                     // No new views, let things keep going.
+                     postOnAnimation(this);
+                     return;
+@@ -4686,7 +4686,7 @@ public abstract class AbsListView extends AdapterView<ListAdapter> implements Te
+                 }
+                 final int lastPos = firstPos + lastViewIndex;
+ 
+-                if (lastPos == mLastSeenPos) {
++                if (lastPos == mLastSeenPos && getChildCount() > 1) {
+                     // No new views, let things keep going.
+                     postOnAnimation(this);
+                     return;

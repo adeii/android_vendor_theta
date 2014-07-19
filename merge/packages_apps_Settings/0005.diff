@@ -2,10 +2,10 @@ From: ChepKun <ProgrammerKun@gmail.com>
 Subject: packages/Settings (0005): new battery indicators
 
 diff --git a/res/values-ru/cm_strings.xml b/res/values-ru/cm_strings.xml
-index 82171dc..5519d74 100644
+index 6c09fab..aac5e87 100644
 --- a/res/values-ru/cm_strings.xml
 +++ b/res/values-ru/cm_strings.xml
-@@ -675,10 +675,13 @@
+@@ -690,10 +690,13 @@
    <string name="status_bar_battery_title">Стиль индикатора батареи</string>
    <string name="status_bar_style_icon_portrait">Вертикальный значок</string>
    <string name="status_bar_style_icon_landscape">Горизонтальный значок</string>
@@ -50,10 +50,10 @@ index e71a0ae..44ac358 100644
      </string-array>
  
 diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
-index c64fae9..05611a5 100644
+index fd2fa02..ebb28bf 100644
 --- a/res/values/cm_strings.xml
 +++ b/res/values/cm_strings.xml
-@@ -961,10 +961,13 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+@@ -990,10 +990,13 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
      <string name="status_bar_battery_title">Battery status style</string>
      <string name="status_bar_style_icon_portrait">Icon portrait</string>
      <string name="status_bar_style_icon_landscape">Icon landscape</string>
@@ -69,21 +69,21 @@ index c64fae9..05611a5 100644
      <string name="status_bar_signal_text_title">Signal status style</string>
      <string name="status_bar_signal_style_icon">Icon</string>
 diff --git a/src/com/android/settings/cyanogenmod/StatusBar.java b/src/com/android/settings/cyanogenmod/StatusBar.java
-index b6ca5f1..ef476d5 100644
+index ac2671a..fcdd068 100644
 --- a/src/com/android/settings/cyanogenmod/StatusBar.java
 +++ b/src/com/android/settings/cyanogenmod/StatusBar.java
-@@ -41,6 +41,7 @@ public class StatusBar extends SettingsPreferenceFragment implements OnPreferenc
+@@ -47,6 +47,7 @@ public class StatusBar extends SettingsPreferenceFragment implements OnPreferenc
      private static final String STATUS_BAR_STYLE_HIDDEN = "4";
      private static final String STATUS_BAR_STYLE_TEXT = "6";
      private static final String STATUS_BAR_STYLE_STATUSBAR = "7";
 +    private static final String STATUS_BAR_STYLE_STATUSBAR_TEXT = "8";
  
+     private ListPreference mStatusBarClockStyle;
      private ListPreference mStatusBarBattery;
-     private SystemSettingCheckBoxPreference mStatusBarBatteryShowPercent;
-@@ -116,6 +117,7 @@ public class StatusBar extends SettingsPreferenceFragment implements OnPreferenc
+@@ -170,6 +171,7 @@ public class StatusBar extends SettingsPreferenceFragment implements OnPreferenc
      private void enableStatusBarBatteryDependents(String value) {
          boolean enabled = !(value.equals(STATUS_BAR_STYLE_TEXT)
-                 || value.equals(STATUS_BAR_STYLE_STATUSBAR)
+ 		|| value.equals(STATUS_BAR_STYLE_STATUSBAR)
 +		|| value.equals(STATUS_BAR_STYLE_STATUSBAR_TEXT)
                  || value.equals(STATUS_BAR_STYLE_HIDDEN));
          mStatusBarBatteryShowPercent.setEnabled(enabled);

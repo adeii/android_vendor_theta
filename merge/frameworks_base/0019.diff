@@ -1,0 +1,15 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/base (0019): fix display does not turn off
+
+diff --git a/services/java/com/android/server/power/DisplayPowerController.java b/services/java/com/android/server/power/DisplayPowerController.java
+index 093df06..4d2946b 100644
+--- a/services/java/com/android/server/power/DisplayPowerController.java
++++ b/services/java/com/android/server/power/DisplayPowerController.java
+@@ -825,6 +825,7 @@ final class DisplayPowerController {
+                 if (!mElectronBeamOffAnimator.isStarted()) {
+                     if (mPowerState.getElectronBeamLevel() == 0.0f) {
+                         setScreenOn(false);
++			unblockScreenOn();
+                     } else if (mPowerState.prepareElectronBeam(
+                             mElectronBeamFadesConfig() ?
+                                     ElectronBeam.MODE_FADE :

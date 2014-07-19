@@ -2,7 +2,7 @@ From: Chirayu Desai <cdesai@cyanogenmod.org>
 Subject: packages/Settings (0015): add option to change classic webview
 
 diff --git a/res/values/cm_arrays.xml b/res/values/cm_arrays.xml
-index efafec2..7f839a1 100644
+index 66648e5..7882f6e 100644
 --- a/res/values/cm_arrays.xml
 +++ b/res/values/cm_arrays.xml
 @@ -434,6 +434,22 @@
@@ -29,10 +29,10 @@ index efafec2..7f839a1 100644
      <string-array name="sms_security_check_limit_entries" translatable="false">
          <item>@string/sms_security_check_limit_none</item>
 diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
-index 75209ca..7f8eb7a 100644
+index b2bf9a2..31fd2bd 100644
 --- a/res/values/cm_strings.xml
 +++ b/res/values/cm_strings.xml
-@@ -622,6 +622,12 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+@@ -627,6 +627,12 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
      <string name="kill_app_longpress_back">Kill app back button</string>
      <string name="kill_app_longpress_back_summary">Kill the foreground app by long pressing the back button</string>
  
@@ -43,10 +43,10 @@ index 75209ca..7f8eb7a 100644
 +    <string name="select_webview_classic">Classic</string>
 +
      <!-- Change Log strings -->
-     <string name="changelog_title">View changelog</string>
+     <string name="changelog_title">Changelog</string>
      <string name="changelog_loading">Loading changelog\u2026</string>
 diff --git a/res/xml/development_prefs.xml b/res/xml/development_prefs.xml
-index 51acc28..f065222 100644
+index 45e8906..6957301 100644
 --- a/res/xml/development_prefs.xml
 +++ b/res/xml/development_prefs.xml
 @@ -336,6 +336,13 @@

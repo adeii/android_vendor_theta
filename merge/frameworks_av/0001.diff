@@ -1,0 +1,60 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/av (0001): fix music freezes on low ram devices
+
+diff --git a/media/libmedia/AudioSystem.cpp b/media/libmedia/AudioSystem.cpp
+index 2b57118..9f65e98 100644
+--- a/media/libmedia/AudioSystem.cpp
++++ b/media/libmedia/AudioSystem.cpp
+@@ -804,7 +804,7 @@ status_t AudioSystem::setLowRamDevice(bool isLowRamDevice)
+ {
+     const sp<IAudioFlinger>& af = AudioSystem::get_audio_flinger();
+     if (af == 0) return PERMISSION_DENIED;
+-    return af->setLowRamDevice(isLowRamDevice);
++    return af->setLowRamDevice(false);
+ }
+ 
+ void AudioSystem::clearAudioConfigCache()
+diff --git a/media/libmedia/IAudioFlinger.cpp b/media/libmedia/IAudioFlinger.cpp
+index 92471d6..f8481c1 100644
+--- a/media/libmedia/IAudioFlinger.cpp
++++ b/media/libmedia/IAudioFlinger.cpp
+@@ -780,7 +780,7 @@ public:
+     {
+         Parcel data, reply;
+         data.writeInterfaceToken(IAudioFlinger::getInterfaceDescriptor());
+-        data.writeInt32((int) isLowRamDevice);
++        data.writeInt32((int) false);
+         remote()->transact(SET_LOW_RAM_DEVICE, data, &reply);
+         return reply.readInt32();
+     }
+@@ -1192,7 +1192,7 @@ status_t BnAudioFlinger::onTransact(
+         case SET_LOW_RAM_DEVICE: {
+             CHECK_INTERFACE(IAudioFlinger, data, reply);
+             bool isLowRamDevice = data.readInt32() != 0;
+-            reply->writeInt32(setLowRamDevice(isLowRamDevice));
++            reply->writeInt32(setLowRamDevice(false));
+             return NO_ERROR;
+         } break;
+         default:
+diff --git a/services/audioflinger/AudioFlinger.cpp b/services/audioflinger/AudioFlinger.cpp
+index 0b19f0c..211e18f 100644
+--- a/services/audioflinger/AudioFlinger.cpp
++++ b/services/audioflinger/AudioFlinger.cpp
+@@ -170,7 +170,7 @@ AudioFlinger::AudioFlinger()
+       mNextUniqueId(1),
+       mMode(AUDIO_MODE_INVALID),
+       mBtNrecIsOff(false),
+-      mIsLowRamDevice(true),
++      mIsLowRamDevice(false),
+       mIsDeviceTypeKnown(false),
+ #ifdef QCOM_DIRECTTRACK
+       mGlobalEffectEnableTime(0),
+@@ -1801,7 +1801,7 @@ status_t AudioFlinger::setLowRamDevice(bool isLowRamDevice)
+     if (mIsDeviceTypeKnown) {
+         return INVALID_OPERATION;
+     }
+-    mIsLowRamDevice = isLowRamDevice;
++    mIsLowRamDevice = false;
+     mIsDeviceTypeKnown = true;
+     return NO_ERROR;
+ }

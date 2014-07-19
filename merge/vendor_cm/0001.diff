@@ -33,3 +33,21 @@ index 1c0c4a6..097693f 100644
      CellBroadcastReceiver \
      VoiceDialer \
      WhisperPush
+
+diff --git a/config/common_full.mk b/config/common_full.mk
+index 0d6292a..8b9e7d0 100644
+--- a/config/common_full.mk
++++ b/config/common_full.mk
+@@ -14,11 +14,9 @@ PRODUCT_PACKAGE_OVERLAYS += vendor/cm/overlay/dictionaries
+ PRODUCT_PACKAGES += \
+     LiveWallpapersPicker \
+     PhotoTable \
+-    SoundRecorder \
+-    PhotoPhase
++    SoundRecorder
+ 
+ PRODUCT_PACKAGES += \
+-    VideoEditor \
+     libvideoeditor_jni \
+     libvideoeditor_core \
+     libvideoeditor_osal \
