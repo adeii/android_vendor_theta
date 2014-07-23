@@ -1,0 +1,24 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/base (0022): add internal SD name
+
+diff --git a/core/res/res/values-ru/cm_strings.xml b/core/res/res/values-ru/cm_strings.xml
+index 9f30732..01c8981 100644
+--- a/core/res/res/values-ru/cm_strings.xml
++++ b/core/res/res/values-ru/cm_strings.xml
+@@ -133,4 +133,5 @@
+   <string name="adb_active_generic_notification_message">Нажмите, чтобы отключить отладку.</string>
+   <string name="extmedia_format_message_cm" product="nosdcard">Все данные на USB-накопителе (по адресу «%1$s») будут удалены. Это действие невозможно отменить!</string>
+   <string name="extmedia_format_message_cm" product="default">Все данные на карте (по адресу «%1$s») будут удалены. Это действие невозможно отменить!</string>
++  <string name="storage_internal_sd">"Встроенная память"</string>
+ </resources>
+diff --git a/core/res/res/values/cm_strings.xml b/core/res/res/values/cm_strings.xml
+index 5dab702..6cee378 100644
+--- a/core/res/res/values/cm_strings.xml
++++ b/core/res/res/values/cm_strings.xml
+@@ -227,4 +227,6 @@
+     <string name="extmedia_format_message_cm" product="nosdcard">All data on your USB storage (under path \'%1$s\') will be erased. This action can\'t be reversed!</string>
+     <!-- See EXTMEDIA_FORMAT.   This is the message. -->
+     <string name="extmedia_format_message_cm" product="default">All data on your card (under path \'%1$s\') will be erased. This action can\'t be reversed!</string>
++
++    <string name="storage_internal_sd">"Built-in storage"</string>
+ </resources>

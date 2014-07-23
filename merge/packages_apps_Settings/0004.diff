@@ -9,7 +9,7 @@ index 5946a9d..a368940 100644
    <string name="status_bar_double_tap_to_sleep_title">Выключать экран при двойном нажатии</string>
    <string name="development_shortcut_title">Дополнительные пункты меню</string>
    <string name="development_shortcut_summary">Показывать пункты «Стереть данные» и «Остановить» в уведомлениях и списке недавних приложений</string>
-+  <string name="storage_switch_title">Память по умолчанию</string>
++  <string name="storage_switch_title">Карта памяти по умолчанию</string>
 +  <string name="storage_switch_reboot_prompt_title">Требуется перезагрузка</string>
 +  <string name="storage_switch_reboot_prompt_message">Для того, чтобы изменения вступили в силу, требуется перезагрузка.\n\nВы хотите выполнить перезагрузку сейчас?</string>
    <string name="usb_mass_storage_title">USB-накопитель</string>
@@ -25,7 +25,7 @@ index 516be93..cb283fd 100644
  
 +    <!-- Storage switch -->
 +    <string-array name="storage_switch_entries" translatable="false">
-+        <item>@string/internal_storage</item>
++        <item>@string/internal_sd_storage</item>
 +        <item>@string/sd_card_storage</item>
 +    </string-array>
 +

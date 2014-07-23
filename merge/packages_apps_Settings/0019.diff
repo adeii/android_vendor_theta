@@ -1,0 +1,24 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Settings (0019): add internal SD name
+
+diff --git a/res/values-ru/cm_strings.xml b/res/values-ru/cm_strings.xml
+index 7fce913..8d52995 100644
+--- a/res/values-ru/cm_strings.xml
++++ b/res/values-ru/cm_strings.xml
+@@ -910,4 +910,5 @@
+   <string name="swap_type_none">Не использовать</string>
+   <string name="swap_type_zram">zRam</string>
+   <string name="swap_type_pagefile">Файл подкачки</string>
++  <string name="internal_sd_storage">"Встроенная память"</string>
+ </resources>
+diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
+index bc452c0..c1e078c 100644
+--- a/res/values/cm_strings.xml
++++ b/res/values/cm_strings.xml
+@@ -1312,4 +1312,6 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+     <string name="swap_type_none">None</string>
+     <string name="swap_type_zram">zRam</string>
+     <string name="swap_type_pagefile">Pagefile</string>
++
++    <string name="internal_sd_storage">"Built-in storage"</string>
+ </resources>
