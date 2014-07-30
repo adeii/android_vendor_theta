@@ -1,0 +1,168 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: frameworks/base (0023): add battery level around unlock ring
+
+diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
+index 5d794cb..3c3fae3 100644
+--- a/core/java/android/provider/Settings.java
++++ b/core/java/android/provider/Settings.java
+@@ -3461,6 +3461,12 @@ public final class Settings {
+         public static final String SHOW_NAVBAR = "show_navbar";
+ 
+         /**
++         * Whether or not to show circle battery around the lockscreen ring
++         * @hide
++         */
++        public static final String BATTERY_AROUND_LOCKSCREEN_RING = "battery_around_lockscreen_ring";
++
++        /**
+          * Navigation bar height
+          * @hide
+          */
+diff --git a/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java b/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java
+index a00a838..b74d268 100644
+--- a/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java
++++ b/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java
+@@ -29,6 +29,8 @@ import android.content.pm.PackageManager.NameNotFoundException;
+ import android.content.res.Resources;
+ import android.content.res.TypedArray;
+ import android.graphics.Canvas;
++import android.graphics.Paint;
++import android.graphics.RectF;
+ import android.graphics.drawable.Drawable;
+ import android.os.Bundle;
+ import android.os.UserHandle;
+@@ -124,6 +126,10 @@ public class GlowPadView extends View {
+     private int mNewTargetResources;
+     private ArrayList<TargetDrawable> mNewTargetDrawables;
+ 
++    private Paint mArcPaint;
++    private RectF mArcRect;
++    private float mArcAngle = 0f;
++
+     private class AnimationBundle extends ArrayList<Tweener> {
+         private static final long serialVersionUID = 0xA84D78726F127468L;
+         private boolean mSuspended;
+@@ -278,6 +284,14 @@ public class GlowPadView extends View {
+         mPointCloud = new PointCloud(pointDrawable);
+         mPointCloud.makePointCloud(mInnerRadius, mOuterRadius);
+         mPointCloud.glowManager.setRadius(mGlowRadius);
++
++        mArcPaint = new Paint();
++        mArcPaint.setStrokeWidth(10.0f);
++        mArcPaint.setStyle(Paint.Style.STROKE);
++        mArcRect = new RectF(mHandleDrawable.getPositionX() - mHandleDrawable.getWidth()/2,
++                                 mHandleDrawable.getPositionY() - mHandleDrawable.getHeight()/2,
++                                 mHandleDrawable.getPositionX() + mHandleDrawable.getWidth()/2,
++                                 mHandleDrawable.getPositionY() + mHandleDrawable.getHeight()/2);
+     }
+ 
+     private int getResourceId(TypedArray a, int id) {
+@@ -1242,6 +1256,15 @@ public class GlowPadView extends View {
+ 
+     @Override
+     protected void onDraw(Canvas canvas) {
++        if (mArcAngle > 0 && mHandleDrawable.getAlpha() > 0) {
++            mArcRect.set(mHandleDrawable.getPositionX() - mHandleDrawable.getWidth()/3,
++                    mHandleDrawable.getPositionY() - mHandleDrawable.getHeight()/3,
++                    mHandleDrawable.getPositionX() + mHandleDrawable.getWidth()/3,
++                    mHandleDrawable.getPositionY() + mHandleDrawable.getHeight()/3);
++
++            canvas.drawArc(mArcRect, -90, mArcAngle, false, mArcPaint);
++        }
++
+         mPointCloud.draw(canvas);
+         mOuterRing.draw(canvas);
+         final int ntargets = mTargetDrawables.size();
+@@ -1430,6 +1453,11 @@ public class GlowPadView extends View {
+         return replaced;
+     }
+ 
++    public void setArc(float angle, int color) {
++        mArcAngle = angle;
++        mArcPaint.setColor(color);
++    }
++
+     public void setHandleDrawable(Drawable handle) {
+         Resources res = mContext.getResources();
+         if (handle != null) {
+diff --git a/packages/Keyguard/src/com/android/keyguard/KeyguardSelectorView.java b/packages/Keyguard/src/com/android/keyguard/KeyguardSelectorView.java
+index b049972..034dd9b 100644
+--- a/packages/Keyguard/src/com/android/keyguard/KeyguardSelectorView.java
++++ b/packages/Keyguard/src/com/android/keyguard/KeyguardSelectorView.java
+@@ -27,6 +27,7 @@ import android.app.admin.DevicePolicyManager;
+ import android.content.ComponentName;
+ import android.content.Context;
+ import android.content.Intent;
++import android.graphics.Color;
+ import android.content.pm.PackageManager;
+ import android.content.pm.PackageManager.NameNotFoundException;
+ import android.content.res.Configuration;
+@@ -80,6 +81,7 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
+     private int mTargetOffset;
+     private boolean mIsScreenLarge;
+     private GestureDetector mDoubleTapGesture;
++    private float mBatteryLevel;
+ 
+     OnTriggerListener mOnTriggerListener = new OnTriggerListener() {
+ 
+@@ -164,6 +166,11 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
+         public void onSimStateChanged(State simState) {
+             updateTargets();
+         }
++
++        @Override
++        public void onRefreshBatteryInfo(KeyguardUpdateMonitor.BatteryStatus batStatus) {
++            updateLockscreenBattery(batStatus);
++        }
+     };
+ 
+     private final KeyguardActivityLauncher mActivityLauncher = new KeyguardActivityLauncher() {
+@@ -277,6 +284,7 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
+         mSearchDisabled = disabledBySimState || !searchActionAvailable || !searchTargetPresent
+                 || !currentUserSetup;
+         updateResources();
++	updateLockscreenBattery(null);
+     }
+ 
+     public void updateResources() {
+@@ -473,4 +481,27 @@ public class KeyguardSelectorView extends LinearLayout implements KeyguardSecuri
+         KeyguardSecurityViewHelper.
+                 hideBouncer(mSecurityMessageDisplay, mFadeView, mBouncerFrame, duration);
+     }
++
++    public void updateLockscreenBattery(KeyguardUpdateMonitor.BatteryStatus status) {
++        if (Settings.System.getIntForUser(
++                mContext.getContentResolver(),
++                Settings.System.BATTERY_AROUND_LOCKSCREEN_RING,
++                1 /*default */,
++                UserHandle.USER_CURRENT) == 1) {
++            if (status != null) mBatteryLevel = status.level;
++            float cappedBattery = mBatteryLevel;
++
++            if (mBatteryLevel < 15) {
++                cappedBattery = 15;
++            }
++            else if (mBatteryLevel > 90) {
++                cappedBattery = 90;
++            }
++
++            final float hue = (cappedBattery - 15) * 1.6f;
++            mGlowPadView.setArc(mBatteryLevel * 3.6f, Color.HSVToColor(0x80, new float[]{ hue, 1.f, 1.f }));
++        } else {
++            mGlowPadView.setArc(0, 0);
++        }
++    }
+ }
+
+diff --git a/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java b/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java
+index b74d268..4411510 100644
+--- a/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java
++++ b/core/java/com/android/internal/widget/multiwaveview/GlowPadView.java
+@@ -286,6 +286,7 @@ public class GlowPadView extends View {
+         mPointCloud.glowManager.setRadius(mGlowRadius);
+ 
+         mArcPaint = new Paint();
++	mArcPaint.setAntiAlias(true);
+         mArcPaint.setStrokeWidth(10.0f);
+         mArcPaint.setStyle(Paint.Style.STROKE);
+         mArcRect = new RectF(mHandleDrawable.getPositionX() - mHandleDrawable.getWidth()/2,

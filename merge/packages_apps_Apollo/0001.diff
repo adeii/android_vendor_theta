@@ -1,0 +1,362 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Apollo (0001): add SleepMode
+
+diff --git a/res/layout/sleep_mode_time_selector.xml b/res/layout/sleep_mode_time_selector.xml
+new file mode 100644
+index 0000000..c04114b
+--- /dev/null
++++ b/res/layout/sleep_mode_time_selector.xml
+@@ -0,0 +1,50 @@
++<?xml version="1.0" encoding="utf-8"?>
++<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
++    android:layout_width="fill_parent"
++    android:layout_height="wrap_content" >
++
++    <TextView
++        android:id="@+id/pop_up_time"
++        android:layout_width="80dip"
++        android:layout_height="wrap_content"
++        android:layout_gravity="center_horizontal"
++        android:gravity="center_horizontal"
++        android:paddingTop="10dip"
++        android:singleLine="true"
++        android:textSize="18dip" />
++
++    <LinearLayout
++        android:layout_width="fill_parent"
++        android:layout_height="100dip"
++        android:layout_gravity="top"
++        android:layout_marginLeft="15dip"
++        android:layout_marginRight="15dip"
++        android:layout_marginTop="20dip"
++        android:gravity="center" >
++
++        <TextView
++            android:id="@+id/left"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_gravity="center_vertical"
++            android:text="@string/min_interval" />
++
++        <SeekBar
++            android:id="@+id/seekbar"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_gravity="center_vertical"
++            android:layout_weight="1"
++            android:max="89"
++            android:paddingLeft="15dip"
++            android:paddingRight="15dip" />
++
++        <TextView
++            android:id="@+id/right"
++            android:layout_width="wrap_content"
++            android:layout_height="wrap_content"
++            android:layout_gravity="center_vertical"
++            android:text="@string/max_interval" />
++    </LinearLayout>
++
++</FrameLayout>
+\ No newline at end of file
+diff --git a/res/menu/activity_base.xml b/res/menu/activity_base.xml
+index d494081..d479410 100644
+--- a/res/menu/activity_base.xml
++++ b/res/menu/activity_base.xml
+@@ -17,9 +17,15 @@
+ <menu xmlns:android="http://schemas.android.com/apk/res/android" >
+ 
+     <item
+-        android:id="@+id/menu_settings"
++        android:id="@+id/menu_sleep_mode"
+         android:orderInCategory="4"
+         android:showAsAction="never"
++        android:title="@string/menu_sleep_mode"/>
++
++    <item
++        android:id="@+id/menu_settings"
++        android:orderInCategory="5"
++        android:showAsAction="never"
+         android:title="@string/menu_settings"/>
+ 
+ </menu>
+\ No newline at end of file
+diff --git a/res/values-zh-rCN/strings.xml b/res/values-zh-rCN/strings.xml
+index cc31d1b..2ada02c 100644
+--- a/res/values-zh-rCN/strings.xml
++++ b/res/values-zh-rCN/strings.xml
+@@ -129,4 +129,11 @@
+   <string name="empty_search">无搜索结果</string>
+   <string name="empty_favorite">您标记为收藏的歌曲将在这里显示.</string>
+   <string name="empty_recent">您曾经听过的专辑将在这里显示. 请尝试播放一些音乐.</string>
++
++  <!-- MoKee Add Start -->
++  <string name="menu_sleep_mode">睡眠模式</string>
++  <string name="cancel_sleep_mode">关闭睡眠模式</string>
++  <string name="select_quit_time">请设置自动关闭的时间（分）</string>
++  <string name="quit_warining">播放器将在%1$s分钟后停止播放</string>
++  <!-- MoKee Add End -->
+ </resources>
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index 55fab03..671867d 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -170,4 +170,13 @@
+     <string name="empty_favorite">Songs you mark as favorites will be shown here.</string>
+     <string name="empty_recent">Albums you have listened to will show up here. Try playing some music.</string>
+ 
++    <!-- MoKee Add Start -->
++    <string name="menu_sleep_mode">Sleep Timer</string>
++    <string name="cancel_sleep_mode">Cancel Sleep Timer</string>
++    <string name="select_quit_time">Set timer to stop the player (in mins)</string>
++    <string name="quit_warining">Player will stop playing after %1$s minute(s)</string>
++    <string name="min_interval">1</string>
++    <string name="max_interval">90</string>
++    <string name="default_interval">30</string>
++    <!-- MoKee Add End -->
+ </resources>
+diff --git a/src/com/andrew/apollo/IApolloService.aidl b/src/com/andrew/apollo/IApolloService.aidl
+index 5849061..dc2aeb0 100644
+--- a/src/com/andrew/apollo/IApolloService.aidl
++++ b/src/com/andrew/apollo/IApolloService.aidl
+@@ -38,5 +38,7 @@ interface IApolloService
+     int getRepeatMode();
+     int getMediaMountedCount();
+     int getAudioSessionId();
++    boolean getAlarmSet();
++    void setAlarmSet(boolean enable);
+ }
+ 
+diff --git a/src/com/andrew/apollo/MusicPlaybackService.java b/src/com/andrew/apollo/MusicPlaybackService.java
+index d7b3f9c..4286cda 100644
+--- a/src/com/andrew/apollo/MusicPlaybackService.java
++++ b/src/com/andrew/apollo/MusicPlaybackService.java
+@@ -134,6 +134,8 @@ public class MusicPlaybackService extends Service {
+      */
+     public static final String STOP_ACTION = "com.andrew.apollo.stop";
+ 
++    public static final String SLEEP_MODE_STOP_ACTION = "com.andrew.apollo.sleep_mode_stop";
++
+     /**
+      * Called to go to the previous track
+      */
+@@ -484,6 +486,19 @@ public class MusicPlaybackService extends Service {
+     private FavoritesStore mFavoritesCache;
+ 
+     /**
++     * AlarmSet
++     */
++    private static boolean alarmSet = false;
++
++    public boolean getAlarmSet() {
++        return alarmSet;
++    }
++
++    public void setAlarmSet(boolean enable) {
++        alarmSet = enable;
++    }
++
++    /**
+      * {@inheritDoc}
+      */
+     @Override
+@@ -587,6 +602,7 @@ public class MusicPlaybackService extends Service {
+         filter.addAction(TOGGLEPAUSE_ACTION);
+         filter.addAction(PAUSE_ACTION);
+         filter.addAction(STOP_ACTION);
++        filter.addAction(SLEEP_MODE_STOP_ACTION);
+         filter.addAction(NEXT_ACTION);
+         filter.addAction(PREVIOUS_ACTION);
+         filter.addAction(REPEAT_ACTION);
+@@ -783,6 +799,13 @@ public class MusicPlaybackService extends Service {
+             mPausedByTransientLossOfFocus = false;
+             seek(0);
+             releaseServiceUiAndStop();
++        }  else if (SLEEP_MODE_STOP_ACTION.equals(action)) {
++            //AlarmSet
++            setAlarmSet(false);
++            pause();
++            mPausedByTransientLossOfFocus = false;
++            seek(0);
++            releaseServiceUiAndStop();
+         } else if (REPEAT_ACTION.equals(action)) {
+             cycleRepeat();
+         } else if (SHUFFLE_ACTION.equals(action)) {
+@@ -2928,6 +2951,22 @@ public class MusicPlaybackService extends Service {
+          * {@inheritDoc}
+          */
+         @Override
++        public boolean getAlarmSet() throws RemoteException  {
++            return mService.get().getAlarmSet();
++        }
++
++        /**
++         * {@inheritDoc}
++         */
++        @Override
++        public void setAlarmSet(boolean enable) throws RemoteException  {
++            mService.get().setAlarmSet(enable);
++        }
++
++        /**
++         * {@inheritDoc}
++         */
++        @Override
+         public String getAlbumName() throws RemoteException {
+             return mService.get().getAlbumName();
+         }
+diff --git a/src/com/andrew/apollo/dialog/SleepModeDialog.java b/src/com/andrew/apollo/dialog/SleepModeDialog.java
+new file mode 100644
+index 0000000..46ff3da
+--- /dev/null
++++ b/src/com/andrew/apollo/dialog/SleepModeDialog.java
+@@ -0,0 +1,94 @@
++package com.andrew.apollo.dialog;
++
++import android.app.AlarmManager;
++import android.app.AlertDialog;
++import android.app.Dialog;
++import android.app.DialogFragment;
++import android.app.FragmentManager;
++import android.app.PendingIntent;
++import android.content.ComponentName;
++import android.content.Context;
++import android.content.DialogInterface;
++import android.content.Intent;
++import android.os.Bundle;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.widget.SeekBar;
++import android.widget.SeekBar.OnSeekBarChangeListener;
++import android.widget.TextView;
++import android.widget.Toast;
++
++import com.andrew.apollo.MusicPlaybackService;
++import com.andrew.apollo.R;
++import com.andrew.apollo.utils.MusicUtils;
++
++public class SleepModeDialog extends DialogFragment {
++
++    private static String TAG = "SleepTimerDialog";
++    private static final long mMill = 60 * 1000;
++    private static AlarmManager alarmManager;
++    private static Context context;
++    private static PendingIntent pendingIntent;
++
++    @Override
++    public Dialog onCreateDialog(Bundle savedInstanceState) {
++        int minutes = Integer.valueOf(getString(R.string.default_interval));
++        context = getActivity().getBaseContext();
++        Intent action = new Intent(MusicPlaybackService.SLEEP_MODE_STOP_ACTION);
++        ComponentName serviceName = new ComponentName(context, MusicPlaybackService.class);
++        action.setComponent(serviceName);
++        pendingIntent =  PendingIntent.getService(context, 4, action, 0);
++        alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
++        AlertDialog.Builder builder =new AlertDialog.Builder(getActivity());
++        LayoutInflater inflater = (LayoutInflater)getActivity().getSystemService(context.LAYOUT_INFLATER_SERVICE);
++        View view = inflater.inflate(R.layout.sleep_mode_time_selector, null);
++        final TextView tvPopUpTime = (TextView)view.findViewById(R.id.pop_up_time);
++        tvPopUpTime.setText(String.valueOf(minutes));
++        final SeekBar sBar = (SeekBar)view.findViewById(R.id.seekbar);
++        sBar.setProgress(minutes-1);
++        sBar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
++            @Override
++            public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
++                tvPopUpTime.setText(String.valueOf(arg1+1));
++            }
++
++            @Override
++            public void onStartTrackingTouch(SeekBar arg0) {
++            }
++
++            @Override
++            public void onStopTrackingTouch(SeekBar arg0) {
++            }
++        });
++        builder.setTitle(R.string.select_quit_time);
++        builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
++            @Override
++            public void onClick(DialogInterface dialog, int arg1) {
++                long timeLeft = (sBar.getProgress() + 1) * mMill;
++                alarmManager.set(AlarmManager.RTC_WAKEUP, timeLeft + System.currentTimeMillis(), pendingIntent);
++                MusicUtils.setAlarmSet(true);
++                Toast.makeText(context, String.format(getString(R.string.quit_warining), sBar.getProgress() + 1), Toast.LENGTH_SHORT).show();
++                dialog.dismiss();
++            }
++        });
++        builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
++            @Override
++            public void onClick(DialogInterface dialog, int arg1) {
++                dialog.dismiss();
++            }
++        });
++        builder.setView(view);
++        return builder.create();
++    }
++
++    public static void show(FragmentManager parent) {
++        final SleepModeDialog dialog = new SleepModeDialog();
++        if(MusicUtils.getAlarmSet()) {
++            alarmManager.cancel(pendingIntent);
++            Toast.makeText(context, R.string.cancel_sleep_mode, Toast.LENGTH_SHORT).show();
++            MusicUtils.setAlarmSet(false);
++        } else {
++            dialog.show(parent, TAG);
++        }
++    }
++}
+diff --git a/src/com/andrew/apollo/ui/activities/BaseActivity.java b/src/com/andrew/apollo/ui/activities/BaseActivity.java
+index 270bf91..ac280ba 100644
+--- a/src/com/andrew/apollo/ui/activities/BaseActivity.java
++++ b/src/com/andrew/apollo/ui/activities/BaseActivity.java
+@@ -39,6 +39,7 @@ import com.andrew.apollo.IApolloService;
+ import com.andrew.apollo.MusicPlaybackService;
+ import com.andrew.apollo.MusicStateListener;
+ import com.andrew.apollo.R;
++import com.andrew.apollo.dialog.SleepModeDialog;
+ import com.andrew.apollo.utils.ApolloUtils;
+ import com.andrew.apollo.utils.Lists;
+ import com.andrew.apollo.utils.MusicUtils;
+@@ -221,6 +222,10 @@ public abstract class BaseActivity extends FragmentActivity implements ServiceCo
+                 NavUtils.openSettings(this);
+                 return true;
+ 
++            case R.id.menu_sleep_mode:
++                SleepModeDialog.show(this.getFragmentManager());
++                return true;
++
+             default:
+                 break;
+         }
+diff --git a/src/com/andrew/apollo/utils/MusicUtils.java b/src/com/andrew/apollo/utils/MusicUtils.java
+index 4f47e81..bf0ffff 100644
+--- a/src/com/andrew/apollo/utils/MusicUtils.java
++++ b/src/com/andrew/apollo/utils/MusicUtils.java
+@@ -365,6 +365,28 @@ public final class MusicUtils {
+     }
+ 
+     /**
++     * AlarmSet.
++     */
++    public static boolean getAlarmSet() {
++        if (mService != null) {
++            try {
++                return mService.getAlarmSet();
++            } catch (final RemoteException ignored) {
++            }
++        }
++        return false;
++    }
++
++    public static void setAlarmSet(boolean enable) {
++        if (mService != null) {
++            try {
++                mService.setAlarmSet(enable);
++            } catch (final RemoteException ignored) {
++            }
++        }
++    }
++
++    /**
+      * @return The current album name.
+      */
+     public static final String getAlbumName() {

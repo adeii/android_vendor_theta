@@ -1,0 +1,119 @@
+From: ChepKun <ProgrammerKun@gmail.com>
+Subject: packages/Apollo (0003): make this a bit more consistent with the KitKat UI theme
+
+diff --git a/res/layout/app_widget_recents.xml b/res/layout/app_widget_recents.xml
+index 44d3e45..f32e640 100644
+--- a/res/layout/app_widget_recents.xml
++++ b/res/layout/app_widget_recents.xml
+@@ -85,7 +85,7 @@
+         android:layout_width="match_parent"
+         android:layout_height="@dimen/colorstrip_height"
+         android:layout_below="@+id/app_widget_recents_action_bar"
+-        android:background="@color/holo_blue_light"
++        android:background="@color/white"
+         android:contentDescription="@null" />
+
+     <FrameLayout
+@@ -103,4 +103,4 @@
+             android:cacheColorHint="@color/transparent" />
+     </FrameLayout>
+ 
+-</RelativeLayout>
+\ No newline at end of file
++</RelativeLayout>
+diff --git a/res/layout/grid_base.xml b/res/layout/grid_base.xml
+index 255e562..017b8c4 100644
+--- a/res/layout/grid_base.xml
++++ b/res/layout/grid_base.xml
+@@ -25,7 +25,7 @@
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_gravity="center_vertical|center"
+-        android:textColor="@color/holo_blue_light"
++        android:textColor="@color/white"
+         android:textSize="@dimen/text_size_large"
+         android:textStyle="bold"
+         android:visibility="gone" />
+@@ -43,4 +43,4 @@
+         android:scrollbars="vertical"
+         android:verticalSpacing="@dimen/grid_item_spacing" />
+ 
+-</FrameLayout>
+\ No newline at end of file
++</FrameLayout>
+diff --git a/res/layout/list_base.xml b/res/layout/list_base.xml
+index 63ef3fc..674f554 100644
+--- a/res/layout/list_base.xml
++++ b/res/layout/list_base.xml
+@@ -27,7 +27,7 @@
+         android:layout_height="wrap_content"
+         android:layout_gravity="center_vertical|center"
+         android:padding="@dimen/list_preferred_item_padding"
+-        android:textColor="@color/holo_blue_light"
++        android:textColor="@color/white"
+         android:textSize="@dimen/text_size_large"
+         android:textStyle="bold"
+         android:visibility="gone" />
+@@ -44,4 +44,4 @@
+         android:paddingLeft="@dimen/fast_scroll_padding_left"
+         android:paddingRight="@dimen/fast_scroll_padding_right" />
+ 
+-</FrameLayout>
+\ No newline at end of file
++</FrameLayout>
+diff --git a/res/values/colors.xml b/res/values/colors.xml
+index b3dfb81..0c96958 100644
+--- a/res/values/colors.xml
++++ b/res/values/colors.xml
+@@ -36,6 +36,9 @@
+     <!-- A darkish color used for the action bar -->
+     <color name="action_bar_color">#ff0d0d0d</color>
+ 
++    <!-- A light Holo shade of gray -->
++    <color name="holo_gray_light">#ff8b8b8b</color>
++
+     <!-- A light, Holo shade of blue -->
+     <color name="holo_blue_light">#ff33b5e5</color>
+ 
+diff --git a/res/values/themeconfig.xml b/res/values/themeconfig.xml
+index bd9bedc..36fa629 100644
+--- a/res/values/themeconfig.xml
++++ b/res/values/themeconfig.xml
+@@ -39,7 +39,7 @@
+     <!-- Bottom action bar -->
+     <color name="bottom_action_bar">@color/action_bar_color</color>
+     <color name="bab_line_one">@color/white</color>
+-    <color name="bab_line_two">@color/transparent_white</color>
++    <color name="bab_line_two">@color/white</color>
+ 
+     <!-- Action bar items -->
+     <color name="favorite_normal">@color/transparent_white</color>
+diff --git a/src/com/andrew/apollo/dragdrop/DragSortListView.java b/src/com/andrew/apollo/dragdrop/DragSortListView.java
+index 0331a97..941f232 100644
+--- a/src/com/andrew/apollo/dragdrop/DragSortListView.java
++++ b/src/com/andrew/apollo/dragdrop/DragSortListView.java
+@@ -393,9 +393,9 @@ public class DragSortListView extends ListView {
+                 DragSortController.ON_DOWN, DragSortController.FLING_RIGHT_REMOVE);
+         mController.setRemoveEnabled(true);
+         mController.setSortEnabled(true);
+-        /* Transparent holo light blue */
++        /* Transparent kitkat white */
+         mController
+-                .setBackgroundColor(getResources().getColor(R.color.holo_blue_light_transparent));
++                .setBackgroundColor(getResources().getColor(R.color.holo_gray_light));
+ 
+         mFloatViewManager = mController;
+         setOnTouchListener(mController);
+diff --git a/src/com/andrew/apollo/utils/PreferenceUtils.java b/src/com/andrew/apollo/utils/PreferenceUtils.java
+index 17b25bd..e282f57 100644
+--- a/src/com/andrew/apollo/utils/PreferenceUtils.java
++++ b/src/com/andrew/apollo/utils/PreferenceUtils.java
+@@ -156,7 +156,7 @@ public final class PreferenceUtils {
+      */
+     public final int getDefaultThemeColor(final Context context) {
+         return mPreferences.getInt(DEFAULT_THEME_COLOR,
+-                context.getResources().getColor(R.color.holo_blue_light));
++                context.getResources().getColor(R.color.holo_gray_light));
+     }
+ 
+     /**

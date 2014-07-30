@@ -1,24 +1,87 @@
 From: ChepKun <ProgrammerKun@gmail.com>
-Subject: packages/Settings (0019): add internal SD name
+Subject: packages/Settings (0019): add lockscreen ring battery setting
 
 diff --git a/res/values-ru/cm_strings.xml b/res/values-ru/cm_strings.xml
-index 7fce913..8d52995 100644
+index e79b1ad..b0ec30e 100644
 --- a/res/values-ru/cm_strings.xml
 +++ b/res/values-ru/cm_strings.xml
-@@ -910,4 +910,5 @@
-   <string name="swap_type_none">Не использовать</string>
-   <string name="swap_type_zram">zRam</string>
-   <string name="swap_type_pagefile">Файл подкачки</string>
-+  <string name="internal_sd_storage">"Встроенная память"</string>
+@@ -916,4 +916,5 @@
+   <string name="enable_adb_cm">Режим отладки</string>
+   <string name="enable_adb_summary_cm">Включить интерфейс Android Debug Bridge (ADB)</string>
+   <string name="internal_sd_storage">"Встроенная память"</string>
++  <string name="battery_around_lockscreen_ring">Батарея вокруг кольца разблокировки</string>
  </resources>
 diff --git a/res/values/cm_strings.xml b/res/values/cm_strings.xml
-index bc452c0..c1e078c 100644
+index d5d73c4..d35b564 100644
 --- a/res/values/cm_strings.xml
 +++ b/res/values/cm_strings.xml
-@@ -1312,4 +1312,6 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
-     <string name="swap_type_none">None</string>
-     <string name="swap_type_zram">zRam</string>
-     <string name="swap_type_pagefile">Pagefile</string>
+@@ -1314,4 +1314,7 @@ two in order to insert additional control points. \'Remove\' deletes the selecte
+     <string name="no_filters_title">No filters set</string>
+ 
+     <string name="internal_sd_storage">"Built-in storage"</string>
 +
-+    <string name="internal_sd_storage">"Built-in storage"</string>
++    <!-- Lockscreen battery ring -->
++    <string name="battery_around_lockscreen_ring">Battery around unlock ring</string>
  </resources>
+diff --git a/res/xml/lockscreen_interface_settings.xml b/res/xml/lockscreen_interface_settings.xml
+index e611e40..5f542bc 100644
+--- a/res/xml/lockscreen_interface_settings.xml
++++ b/res/xml/lockscreen_interface_settings.xml
+@@ -38,6 +38,11 @@
+             android:entryValues="@array/lockscreen_battery_status_values"
+             android:defaultValue="0" />
+ 
++        <CheckBoxPreference
++            android:key="battery_around_lockscreen_ring"
++            android:title="@string/battery_around_lockscreen_ring"
++            android:defaultValue="true" />
++
+         <Preference
+             android:fragment="com.android.settings.cyanogenmod.LockscreenTargets"
+             android:key="lockscreen_targets"
+diff --git a/src/com/android/settings/cyanogenmod/LockscreenInterface.java b/src/com/android/settings/cyanogenmod/LockscreenInterface.java
+index 06da22b..cf60969 100644
+--- a/src/com/android/settings/cyanogenmod/LockscreenInterface.java
++++ b/src/com/android/settings/cyanogenmod/LockscreenInterface.java
+@@ -46,6 +46,7 @@ public class LockscreenInterface extends SettingsPreferenceFragment implements
+     private static final String KEY_ENABLE_MAXIMIZE_WIGETS = "lockscreen_maximize_widgets";
+     private static final String KEY_LOCKSCREEN_MODLOCK_ENABLED = "lockscreen_modlock_enabled";
+     private static final String KEY_LOCKSCREEN_TARGETS = "lockscreen_targets";
++    private static final String KEY_BATTERY_AROUND_LOCKSCREEN_RING = "battery_around_lockscreen_ring";
+ 
+     private CheckBoxPreference mEnableKeyguardWidgets;
+     private CheckBoxPreference mEnableCameraWidget;
+@@ -53,6 +54,7 @@ public class LockscreenInterface extends SettingsPreferenceFragment implements
+     private CheckBoxPreference mEnableMaximizeWidgets;
+     private ListPreference mBatteryStatus;
+     private Preference mLockscreenTargets;
++    private CheckBoxPreference mLockRingBattery;
+ 
+     private ChooseLockSettingsHelper mChooseLockSettingsHelper;
+     private LockPatternUtils mLockUtils;
+@@ -89,6 +91,12 @@ public class LockscreenInterface extends SettingsPreferenceFragment implements
+             mBatteryStatus.setOnPreferenceChangeListener(this);
+         }
+ 
++        mLockRingBattery = (CheckBoxPreference) findPreference(KEY_BATTERY_AROUND_LOCKSCREEN_RING);
++        if (mLockRingBattery != null) {
++            mLockRingBattery.setChecked(Settings.System.getInt(getContentResolver(),
++                    Settings.System.BATTERY_AROUND_LOCKSCREEN_RING, 1) == 1);
++        }
++
+         // Remove lockscreen button actions if device doesn't have hardware keys
+         if (!hasButtons()) {
+             generalCategory.removePreference(findPreference(KEY_LOCKSCREEN_BUTTONS));
+@@ -193,7 +201,11 @@ public class LockscreenInterface extends SettingsPreferenceFragment implements
+         } else if (KEY_ENABLE_CAMERA.equals(key)) {
+             mLockUtils.setCameraEnabled(mEnableCameraWidget.isChecked());
+             return true;
+-        }
++        } else if (KEY_BATTERY_AROUND_LOCKSCREEN_RING.equals(key)) {
++            Settings.System.putInt(getActivity().getApplicationContext().getContentResolver(),
++                    Settings.System.BATTERY_AROUND_LOCKSCREEN_RING, mLockRingBattery.isChecked() ? 1 : 0);
++	    return true;
++	}
+ 
+         return super.onPreferenceTreeClick(preferenceScreen, preference);
+     }

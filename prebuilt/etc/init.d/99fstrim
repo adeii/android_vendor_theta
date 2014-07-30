@@ -1,0 +1,19 @@
+#!/system/bin/sh
+#
+# fstrim is used on a mounted filesystem to discard (or "trim") blocks
+# which are not in use by the filesystem.
+#
+
+LOG=/cache/fstrim.log
+
+if [ -e $LOG ]; then
+   rm $LOG
+fi
+
+echo "Started: $(date +"%d.%m.%Y %T") *" >> $LOG
+
+echo "fstrim /data" >> $LOG
+fstrim -v /data >> $LOG
+
+echo "fstrim /cache" >> $LOG
+fstrim -v /cache >> $LOG
